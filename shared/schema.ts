@@ -1,40 +1,33 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, decimal, date } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, decimal, date, serial } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Users table
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  firstName: text("first_name"),
-  lastName: text("last_name"),
-  dateOfBirth: date("date_of_birth"),
-  height: decimal("height", { precision: 5, scale: 2 }),
-  goalWeight: decimal("goal_weight", { precision: 5, scale: 2 }),
-  activityLevel: text("activity_level"),
-  createdAt: timestamp("created_at").defaultNow(),
+  id: serial("id").primaryKey(), // INTEGER auto-increment: 1, 2, 3...
+  email: varchar("email").notNull().unique(),
+  passwordHash: varchar("password_hash").notNull(),
 });
 
 // Meals table
 export const meals = pgTable("meals", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  mealType: text("meal_type").notNull(), // breakfast, lunch, dinner, snack
-  foodItem: text("food_item").notNull(),
-  calories: integer("calories").notNull(),
-  protein: decimal("protein", { precision: 5, scale: 2 }),
-  carbs: decimal("carbs", { precision: 5, scale: 2 }),
-  fat: decimal("fat", { precision: 5, scale: 2 }),
-  portion: text("portion"),
-  loggedAt: timestamp("logged_at").defaultNow(),
+  id: serial("id").primaryKey(), // INTEGER auto-increment
+  userId: integer("user_id").notNull().references(() => users.id), // INTEGER reference
+  mealName: varchar("meal_name").notNull(), // VARCHAR string
+  mealType: varchar("meal_type").notNull(), // VARCHAR: 'breakfast', 'lunch', 'dinner', 'snack'
+  calories: integer("calories").notNull(), // INTEGER (no decimals)
+  proteinG: decimal("protein_g", { precision: 5, scale: 1 }), // NUMERIC decimal (12.5)
+  carbsG: decimal("carbs_g", { precision: 5, scale: 1 }), // NUMERIC decimal (55.0)
+  fatsG: decimal("fats_g", { precision: 5, scale: 1 }), // NUMERIC decimal (8.0)
+  mealDate: date("meal_date").notNull(), // DATE: 'YYYY-MM-DD'
+  notes: text("notes"), // TEXT optional
 });
 
-// Exercises table
+// Exercises table (simplified to match focus)
 export const exercises = pgTable("exercises", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
   exerciseType: text("exercise_type").notNull(),
   exerciseName: text("exercise_name").notNull(),
   duration: integer("duration"), // in minutes
@@ -46,8 +39,8 @@ export const exercises = pgTable("exercises", {
 
 // Sleep records table
 export const sleepRecords = pgTable("sleep_records", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
   sleepDate: date("sleep_date").notNull(),
   bedtime: timestamp("bedtime"),
   wakeTime: timestamp("wake_time"),
@@ -58,8 +51,8 @@ export const sleepRecords = pgTable("sleep_records", {
 
 // Weight tracking table
 export const weightTracking = pgTable("weight_tracking", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
   weight: decimal("weight", { precision: 5, scale: 2 }).notNull(),
   recordedAt: timestamp("recorded_at").defaultNow(),
   notes: text("notes"),
@@ -67,8 +60,8 @@ export const weightTracking = pgTable("weight_tracking", {
 
 // Water intake table
 export const waterIntake = pgTable("water_intake", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
   amount: decimal("amount", { precision: 5, scale: 2 }).notNull(), // in ml or glasses
   unit: text("unit").default("glasses"), // glasses, ml, oz
   loggedAt: timestamp("logged_at").defaultNow(),
@@ -121,12 +114,10 @@ export const waterIntakeRelations = relations(waterIntake, ({ one }) => ({
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
-  createdAt: true,
 });
 
 export const insertMealSchema = createInsertSchema(meals).omit({
   id: true,
-  loggedAt: true,
 });
 
 export const insertExerciseSchema = createInsertSchema(exercises).omit({

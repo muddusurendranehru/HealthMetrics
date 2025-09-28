@@ -50,19 +50,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userToCreate = {
         email: userData.email,
-        password: hashedPassword,
-        firstName: null,
-        lastName: null,
-        dateOfBirth: null,
-        height: null,
-        goalWeight: null,
-        activityLevel: null
+        passwordHash: hashedPassword
       };
       
       const user = await storage.createUser(userToCreate);
       
       // Don't return password in response
-      const { password, ...userResponse } = user;
+      const { passwordHash, ...userResponse } = user;
       
       res.status(201).json({ 
         message: "User created successfully", 
@@ -95,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Compare hashed password
-      const passwordMatch = await bcrypt.compare(password, user.password);
+      const passwordMatch = await bcrypt.compare(password, user.passwordHash);
       if (!passwordMatch) {
         return res.status(401).json({ 
           message: "Invalid email or password" 
@@ -103,7 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Don't return password in response
-      const { password: _, ...userResponse } = user;
+      const { passwordHash: _, ...userResponse } = user;
       
       res.json({ 
         success: true, 
@@ -143,19 +137,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userToCreate = {
         email: userData.email,
-        password: hashedPassword,
-        firstName: null,
-        lastName: null,
-        dateOfBirth: null,
-        height: null,
-        goalWeight: null,
-        activityLevel: null
+        passwordHash: hashedPassword
       };
       
       const user = await storage.createUser(userToCreate);
       
       // Don't return password in response
-      const { password, ...userResponse } = user;
+      const { passwordHash, ...userResponse } = user;
       
       res.status(201).json({ 
         message: "User created successfully", 
@@ -189,7 +177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Compare hashed password
-      const passwordMatch = await bcrypt.compare(password, user.password);
+      const passwordMatch = await bcrypt.compare(password, user.passwordHash);
       if (!passwordMatch) {
         return res.status(401).json({ 
           message: "Invalid email or password" 
@@ -197,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Don't return password in response
-      const { password: _, ...userResponse } = user;
+      const { passwordHash: _, ...userResponse } = user;
       
       res.json({ 
         success: true, 
@@ -229,7 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Don't return password in response
-      const { password, ...userResponse } = user;
+      const { passwordHash, ...userResponse } = user;
       
       res.json(userResponse);
     } catch (error) {
