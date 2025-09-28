@@ -305,15 +305,15 @@
                 
                 mealsList.innerHTML = meals.map(meal => `
                     <div class="meal-item">
-                        <h4>${meal.meal_name}</h4>
+                        <h4>${meal.mealName}</h4>
                         <div class="meal-details">
-                            <strong>Type:</strong> ${meal.meal_type || 'Not specified'} | 
+                            <strong>Type:</strong> ${meal.mealType || 'Not specified'} | 
                             <strong>Calories:</strong> ${meal.calories} | 
-                            <strong>Protein:</strong> ${meal.protein_g || 0}g | 
-                            <strong>Carbs:</strong> ${meal.carbs_g || 0}g | 
-                            <strong>Fats:</strong> ${meal.fats_g || 0}g<br>
-                            <strong>Date:</strong> ${meal.meal_date} | 
-                            <strong>Added:</strong> ${new Date(meal.created_at || Date.now()).toLocaleString()}
+                            <strong>Protein:</strong> ${meal.proteinG || 0}g | 
+                            <strong>Carbs:</strong> ${meal.carbsG || 0}g | 
+                            <strong>Fats:</strong> ${meal.fatsG || 0}g<br>
+                            <strong>Date:</strong> ${meal.mealDate} | 
+                            <strong>User ID:</strong> ${meal.userId}
                         </div>
                     </div>
                 `).join('');
