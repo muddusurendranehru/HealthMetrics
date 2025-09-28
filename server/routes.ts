@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertUserSchema, insertMealSchema, insertExerciseSchema, insertSleepRecordSchema, insertWeightTrackingSchema, insertWaterIntakeSchema } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcrypt";
+import path from "path";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -16,9 +17,111 @@ const signupSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve static HTML files
+  app.get("/", (req, res) => {
+    res.sendFile(path.join(process.cwd(), "index.html"));
+  });
+
+  app.get("/dashboard.html", (req, res) => {
+    res.sendFile(path.join(process.cwd(), "dashboard.html"));
+  });
+
   // Test endpoint
   app.get("/api/test", (req, res) => {
     res.json({ message: "API Working", timestamp: new Date().toISOString() });
+  });
+
+  // Login/signup without /api prefix for HTML compatibility
+  app.post("/signup", async (req, res) => {
+    try {
+      const userData = signupSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ 
+          message: "User with this email already exists" 
+        });
+      }
+
+      // Hash password before storing
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
+      
+      const userToCreate = {
+        email: userData.email,
+        password: hashedPassword,
+        firstName: null,
+        lastName: null,
+        dateOfBirth: null,
+        height: null,
+        goalWeight: null,
+        activityLevel: null
+      };
+      
+      const user = await storage.createUser(userToCreate);
+      
+      // Don't return password in response
+      const { password, ...userResponse } = user;
+      
+      res.status(201).json({ 
+        message: "User created successfully", 
+        user: userResponse 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      console.error("Signup error:", error);
+      res.status(500).json({ 
+        message: "Internal server error" 
+      });
+    }
+  });
+
+  app.post("/login", async (req, res) => {
+    try {
+      const { email, password } = loginSchema.parse(req.body);
+      
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ 
+          message: "Invalid email or password" 
+        });
+      }
+
+      // Compare hashed password
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
+        return res.status(401).json({ 
+          message: "Invalid email or password" 
+        });
+      }
+
+      // Don't return password in response
+      const { password: _, ...userResponse } = user;
+      
+      res.json({ 
+        message: "Login successful", 
+        user: userResponse 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      console.error("Login error:", error);
+      res.status(500).json({ 
+        message: "Internal server error" 
+      });
+    }
   });
 
   // User signup
@@ -157,6 +260,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/meals", async (req, res) => {
+    try {
+      const userId = req.query.userId as string;
+      if (!userId) {
+        return res.status(400).json({ message: "userId is required" });
+      }
+      
+      const today = new Date().toISOString().split('T')[0];
+      const meals = await storage.getUserMealsForDate(userId, today);
+      res.json(meals);
+    } catch (error) {
+      console.error("Get meals error:", error);
+      res.status(500).json({ 
+        message: "Internal server error" 
+      });
+    }
+  });
+
   // Exercise routes
   app.post("/api/exercises", async (req, res) => {
     try {
@@ -177,6 +298,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/exercises", async (req, res) => {
+    try {
+      const userId = req.query.userId as string;
+      if (!userId) {
+        return res.status(400).json({ message: "userId is required" });
+      }
+      
+      const today = new Date().toISOString().split('T')[0];
+      const exercises = await storage.getUserExercisesForDate(userId, today);
+      res.json(exercises);
+    } catch (error) {
+      console.error("Get exercises error:", error);
+      res.status(500).json({ 
+        message: "Internal server error" 
+      });
+    }
+  });
+
   // Sleep routes
   app.post("/api/sleep", async (req, res) => {
     try {
@@ -191,6 +330,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       console.error("Create sleep record error:", error);
+      res.status(500).json({ 
+        message: "Internal server error" 
+      });
+    }
+  });
+
+  app.get("/api/sleep", async (req, res) => {
+    try {
+      const userId = req.query.userId as string;
+      if (!userId) {
+        return res.status(400).json({ message: "userId is required" });
+      }
+      
+      const today = new Date().toISOString().split('T')[0];
+      const sleepRecords = await storage.getUserSleepForDate(userId, today);
+      res.json(sleepRecords);
+    } catch (error) {
+      console.error("Get sleep records error:", error);
       res.status(500).json({ 
         message: "Internal server error" 
       });

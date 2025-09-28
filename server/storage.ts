@@ -31,14 +31,17 @@ export interface IStorage {
   // Meal methods
   createMeal(meal: InsertMeal): Promise<Meal>;
   getUserMeals(userId: string, limit?: number): Promise<Meal[]>;
+  getUserMealsForDate(userId: string, date: string): Promise<Meal[]>;
 
   // Exercise methods
   createExercise(exercise: InsertExercise): Promise<Exercise>;
   getUserExercises(userId: string, limit?: number): Promise<Exercise[]>;
+  getUserExercisesForDate(userId: string, date: string): Promise<Exercise[]>;
 
   // Sleep methods
   createSleepRecord(sleepRecord: InsertSleepRecord): Promise<SleepRecord>;
   getUserSleepRecords(userId: string, limit?: number): Promise<SleepRecord[]>;
+  getUserSleepForDate(userId: string, date: string): Promise<SleepRecord[]>;
 
   // Weight tracking methods
   createWeightRecord(weightRecord: InsertWeightTracking): Promise<WeightTracking>;
@@ -87,6 +90,23 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
 
+  async getUserMealsForDate(userId: string, date: string): Promise<Meal[]> {
+    const startOfDay = new Date(date + 'T00:00:00.000Z');
+    const endOfDay = new Date(date + 'T23:59:59.999Z');
+    
+    return await db
+      .select()
+      .from(meals)
+      .where(
+        and(
+          eq(meals.userId, userId),
+          gte(meals.loggedAt, startOfDay),
+          lte(meals.loggedAt, endOfDay)
+        )
+      )
+      .orderBy(desc(meals.loggedAt));
+  }
+
   // Exercise methods
   async createExercise(insertExercise: InsertExercise): Promise<Exercise> {
     const [exercise] = await db
@@ -105,6 +125,23 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
 
+  async getUserExercisesForDate(userId: string, date: string): Promise<Exercise[]> {
+    const startOfDay = new Date(date + 'T00:00:00.000Z');
+    const endOfDay = new Date(date + 'T23:59:59.999Z');
+    
+    return await db
+      .select()
+      .from(exercises)
+      .where(
+        and(
+          eq(exercises.userId, userId),
+          gte(exercises.loggedAt, startOfDay),
+          lte(exercises.loggedAt, endOfDay)
+        )
+      )
+      .orderBy(desc(exercises.loggedAt));
+  }
+
   // Sleep methods
   async createSleepRecord(insertSleepRecord: InsertSleepRecord): Promise<SleepRecord> {
     const [sleepRecord] = await db
@@ -121,6 +158,18 @@ export class DatabaseStorage implements IStorage {
       .where(eq(sleepRecords.userId, userId))
       .orderBy(desc(sleepRecords.sleepDate))
       .limit(limit);
+  }
+
+  async getUserSleepForDate(userId: string, date: string): Promise<SleepRecord[]> {
+    return await db
+      .select()
+      .from(sleepRecords)
+      .where(
+        and(
+          eq(sleepRecords.userId, userId),
+          eq(sleepRecords.sleepDate, date)
+        )
+      );
   }
 
   // Weight tracking methods
@@ -245,6 +294,19 @@ export class MemStorage implements IStorage {
       .slice(0, limit);
   }
 
+  async getUserMealsForDate(userId: string, date: string): Promise<Meal[]> {
+    const targetDate = new Date(date);
+    const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+    const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
+    
+    return Array.from(this.meals.values())
+      .filter(meal => {
+        const mealDate = meal.loggedAt!;
+        return meal.userId === userId && mealDate >= startOfDay && mealDate < endOfDay;
+      })
+      .sort((a, b) => b.loggedAt!.getTime() - a.loggedAt!.getTime());
+  }
+
   async createExercise(insertExercise: InsertExercise): Promise<Exercise> {
     const id = randomUUID();
     const exercise: Exercise = {
@@ -267,6 +329,19 @@ export class MemStorage implements IStorage {
       .filter(exercise => exercise.userId === userId)
       .sort((a, b) => b.loggedAt!.getTime() - a.loggedAt!.getTime())
       .slice(0, limit);
+  }
+
+  async getUserExercisesForDate(userId: string, date: string): Promise<Exercise[]> {
+    const targetDate = new Date(date);
+    const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+    const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
+    
+    return Array.from(this.exercises.values())
+      .filter(exercise => {
+        const exerciseDate = exercise.loggedAt!;
+        return exercise.userId === userId && exerciseDate >= startOfDay && exerciseDate < endOfDay;
+      })
+      .sort((a, b) => b.loggedAt!.getTime() - a.loggedAt!.getTime());
   }
 
   async createSleepRecord(insertSleepRecord: InsertSleepRecord): Promise<SleepRecord> {
@@ -294,6 +369,11 @@ export class MemStorage implements IStorage {
         return dateB - dateA;
       })
       .slice(0, limit);
+  }
+
+  async getUserSleepForDate(userId: string, date: string): Promise<SleepRecord[]> {
+    return Array.from(this.sleepRecords.values())
+      .filter(record => record.userId === userId && record.sleepDate === date);
   }
 
   async createWeightRecord(insertWeightRecord: InsertWeightTracking): Promise<WeightTracking> {
