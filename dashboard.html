@@ -35,6 +35,7 @@
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
             gap: 30px;
             max-width: 1200px;
             margin: 0 auto;
@@ -93,6 +94,13 @@
             background: #5a6fd8;
         }
 
+        .item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
         .meal-item {
             background: #f8f9fa;
             padding: 15px;
@@ -101,12 +109,20 @@
             border-left: 4px solid #667eea;
         }
 
-        .meal-item h4 {
+        .exercise-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+
+        .meal-item h4, .exercise-item h4 {
             color: #333;
             margin-bottom: 5px;
         }
 
-        .meal-details {
+        .meal-details, .exercise-details {
             color: #666;
             font-size: 13px;
         }
@@ -160,7 +176,7 @@
     </div>
 
     <div class="dashboard">
-        <!-- LEFT BOX: Add Meal Form -->
+        <!-- TOP LEFT: Add Meal Form -->
         <div class="box">
             <h2>🍽️ Add Meal</h2>
             
@@ -211,13 +227,64 @@
             </form>
         </div>
 
-        <!-- RIGHT BOX: Meals List -->
+        <!-- TOP RIGHT: Add Exercise Form -->
+        <div class="box">
+            <h2>💪 Add Exercise</h2>
+            
+            <form id="exerciseForm">
+                <div class="form-group">
+                    <label for="exerciseName">Exercise Name:</label>
+                    <input type="text" id="exerciseName" name="exercise_name" required placeholder="e.g., Running, Push-ups">
+                </div>
+                
+                <div class="form-group">
+                    <label for="exerciseType">Exercise Type:</label>
+                    <select id="exerciseType" name="exercise_type" required>
+                        <option value="">Select exercise type</option>
+                        <option value="cardio">Cardio</option>
+                        <option value="strength">Strength</option>
+                        <option value="flexibility">Flexibility</option>
+                        <option value="sports">Sports</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="durationMinutes">Duration (minutes):</label>
+                    <input type="number" id="durationMinutes" name="duration_minutes" min="1" step="1" placeholder="30">
+                </div>
+                
+                <div class="form-group">
+                    <label for="caloriesBurned">Calories Burned:</label>
+                    <input type="number" id="caloriesBurned" name="calories_burned" min="0" step="1" placeholder="200">
+                </div>
+                
+                <div class="form-group">
+                    <label for="exerciseDate">Exercise Date:</label>
+                    <input type="date" id="exerciseDate" name="exercise_date" required>
+                </div>
+                
+                <button type="submit" class="btn">Add Exercise</button>
+                <div id="exerciseMessage"></div>
+            </form>
+        </div>
+
+        <!-- BOTTOM LEFT: Meals List -->
         <div class="box">
             <h2>📊 Your Meals</h2>
             <div id="mealsList">
                 <!-- Meals will be loaded here -->
             </div>
             <button class="btn" onclick="loadMeals()" style="margin-top: 20px;">Refresh Meals</button>
+        </div>
+
+        <!-- BOTTOM RIGHT: Exercises List -->
+        <div class="box">
+            <h2>🏃 Your Exercises</h2>
+            <div id="exercisesList">
+                <!-- Exercises will be loaded here -->
+            </div>
+            <button class="btn" onclick="loadExercises()" style="margin-top: 20px;">Refresh Exercises</button>
         </div>
     </div>
 
@@ -234,11 +301,13 @@
         document.getElementById('userEmail').textContent = user.email || '';
         document.getElementById('userId').textContent = user.id || '';
 
-        // Load meals when page loads
+        // Load meals and exercises when page loads
         loadMeals();
+        loadExercises();
         
-        // Set default date to today
+        // Set default dates to today
         document.getElementById('mealDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('exerciseDate').value = new Date().toISOString().split('T')[0];
 
         // Handle meal form submission
         document.getElementById('mealForm').addEventListener('submit', async (e) => {
@@ -320,6 +389,85 @@
             } catch (error) {
                 console.error('Error loading meals:', error);
                 document.getElementById('mealsList').innerHTML = '<div class="message error">Failed to load meals.</div>';
+            }
+        }
+
+        // Handle exercise form submission
+        document.getElementById('exerciseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            // Send exact field names and types for Neon database
+            const exerciseData = {
+                user_id: parseInt(user.id),  // Must be INTEGER
+                exercise_name: formData.get('exercise_name'),  // String
+                exercise_type: formData.get('exercise_type'),  // String
+                duration_minutes: parseInt(formData.get('duration_minutes') || "0"),  // INTEGER
+                calories_burned: parseInt(formData.get('calories_burned') || "0"),  // INTEGER
+                exercise_date: formData.get('exercise_date') || new Date().toISOString().split('T')[0]  // 'YYYY-MM-DD'
+            };
+
+            console.log('Sending exercise data:', exerciseData);
+
+            try {
+                const response = await fetch('/api/exercises', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(exerciseData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('exerciseMessage').innerHTML = '<div class="message success">Exercise added successfully!</div>';
+                    e.target.reset(); // Clear form
+                    document.getElementById('exerciseDate').value = new Date().toISOString().split('T')[0]; // Reset date
+                    loadExercises(); // Refresh exercises list
+                } else {
+                    document.getElementById('exerciseMessage').innerHTML = `<div class="message error">${result.message}</div>`;
+                }
+            } catch (error) {
+                console.error('Error adding exercise:', error);
+                document.getElementById('exerciseMessage').innerHTML = '<div class="message error">Failed to add exercise. Please try again.</div>';
+            }
+        });
+
+        // Function to load exercises
+        async function loadExercises() {
+            try {
+                console.log('Loading exercises for user_id:', user.id);
+                
+                const response = await fetch(`/api/exercises/${user.id}`);
+                const exercises = await response.json();
+                
+                console.log('Loaded exercises:', exercises);
+                
+                const exercisesList = document.getElementById('exercisesList');
+                
+                if (exercises.length === 0) {
+                    exercisesList.innerHTML = '<p>No exercises recorded yet. Add your first exercise!</p>';
+                    return;
+                }
+                
+                exercisesList.innerHTML = exercises.map(exercise => `
+                    <div class="exercise-item">
+                        <h4>${exercise.exerciseName}</h4>
+                        <div class="exercise-details">
+                            <strong>Type:</strong> ${exercise.exerciseType || 'Not specified'} | 
+                            <strong>Duration:</strong> ${exercise.durationMinutes || 0} min | 
+                            <strong>Calories:</strong> ${exercise.caloriesBurned || 0}<br>
+                            <strong>Date:</strong> ${exercise.exerciseDate} | 
+                            <strong>User ID:</strong> ${exercise.userId}
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading exercises:', error);
+                document.getElementById('exercisesList').innerHTML = '<div class="message error">Failed to load exercises.</div>';
             }
         }
 

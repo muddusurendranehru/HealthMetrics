@@ -288,37 +288,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Exercise routes
   app.post("/api/exercises", async (req, res) => {
     try {
-      const exerciseData = insertExerciseSchema.parse(req.body);
+      console.log('Received exercise data:', req.body);
+      
+      // Prepare data for storage with correct field names
+      const exerciseData = {
+        userId: parseInt(req.body.user_id), // INTEGER
+        exerciseName: req.body.exercise_name, // STRING
+        exerciseType: req.body.exercise_type, // STRING
+        durationMinutes: req.body.duration_minutes ? parseInt(req.body.duration_minutes) : null, // INTEGER
+        caloriesBurned: req.body.calories_burned ? parseInt(req.body.calories_burned) : null, // INTEGER
+        exerciseDate: req.body.exercise_date // DATE 'YYYY-MM-DD'
+      };
+      
+      console.log('Processed exercise data for storage:', exerciseData);
+      
+      // Save to database using storage interface
       const exercise = await storage.createExercise(exerciseData);
+      console.log('Created exercise:', exercise);
+      
       res.status(201).json(exercise);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Validation error", 
-          errors: error.errors 
-        });
-      }
       console.error("Create exercise error:", error);
       res.status(500).json({ 
-        message: "Internal server error" 
+        message: "Internal server error",
+        error: error.message 
       });
     }
   });
 
-  app.get("/api/exercises", async (req, res) => {
+  app.get("/api/exercises/:userId", async (req, res) => {
     try {
-      const userId = req.query.userId as string;
-      if (!userId) {
-        return res.status(400).json({ message: "userId is required" });
+      const userId = parseInt(req.params.userId); // Convert to INTEGER
+      if (!userId || isNaN(userId)) {
+        return res.status(400).json({ message: "Valid integer userId is required" });
       }
       
-      const today = new Date().toISOString().split('T')[0];
-      const exercises = await storage.getUserExercisesForDate(userId, today);
+      console.log('Fetching exercises for user_id:', userId);
+      
+      // Get exercises from database using storage interface
+      const exercises = await storage.getUserExercises(userId);
+      console.log(`Found ${exercises.length} exercises for user ${userId}`);
+      
       res.json(exercises);
     } catch (error) {
       console.error("Get exercises error:", error);
       res.status(500).json({ 
-        message: "Internal server error" 
+        message: "Internal server error",
+        error: error.message 
       });
     }
   });

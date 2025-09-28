@@ -542,10 +542,76 @@ export class SimpleIntegerStorage implements IStorage {
     }
   }
 
-  // Stub implementations for other methods
-  async createExercise(): Promise<any> { throw new Error('Not implemented'); }
-  async getUserExercises(): Promise<any[]> { return []; }
-  async getUserExercisesForDate(): Promise<any[]> { return []; }
+  // Exercise methods for exercises_new table
+  async createExercise(insertExercise: any): Promise<any> {
+    try {
+      const result = await db.execute(sql`
+        INSERT INTO exercises_new (user_id, exercise_name, exercise_type, duration_minutes, calories_burned, exercise_date) 
+        VALUES (${insertExercise.userId}, ${insertExercise.exerciseName}, ${insertExercise.exerciseType}, 
+                ${insertExercise.durationMinutes}, ${insertExercise.caloriesBurned}, ${insertExercise.exerciseDate}) 
+        RETURNING *
+      `);
+      const exercise = result.rows[0] as any;
+      return {
+        id: exercise.id,
+        userId: exercise.user_id,
+        exerciseName: exercise.exercise_name,
+        exerciseType: exercise.exercise_type,
+        durationMinutes: exercise.duration_minutes,
+        caloriesBurned: exercise.calories_burned,
+        exerciseDate: exercise.exercise_date,
+        createdAt: exercise.created_at
+      };
+    } catch (error) {
+      console.error('Error creating exercise:', error);
+      throw error;
+    }
+  }
+
+  async getUserExercises(userId: number, limit: number = 50): Promise<any[]> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM exercises_new WHERE user_id = ${userId} 
+        ORDER BY exercise_date DESC, id DESC 
+        LIMIT ${limit}
+      `);
+      return result.rows.map((exercise: any) => ({
+        id: exercise.id,
+        userId: exercise.user_id,
+        exerciseName: exercise.exercise_name,
+        exerciseType: exercise.exercise_type,
+        durationMinutes: exercise.duration_minutes,
+        caloriesBurned: exercise.calories_burned,
+        exerciseDate: exercise.exercise_date,
+        createdAt: exercise.created_at
+      }));
+    } catch (error) {
+      console.error('Error getting user exercises:', error);
+      return [];
+    }
+  }
+
+  async getUserExercisesForDate(userId: number, date: string): Promise<any[]> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM exercises_new WHERE user_id = ${userId} AND exercise_date = ${date} 
+        ORDER BY id DESC
+      `);
+      return result.rows.map((exercise: any) => ({
+        id: exercise.id,
+        userId: exercise.user_id,
+        exerciseName: exercise.exercise_name,
+        exerciseType: exercise.exercise_type,
+        durationMinutes: exercise.duration_minutes,
+        caloriesBurned: exercise.calories_burned,
+        exerciseDate: exercise.exercise_date,
+        createdAt: exercise.created_at
+      }));
+    } catch (error) {
+      console.error('Error getting user exercises for date:', error);
+      return [];
+    }
+  }
   async createSleepRecord(): Promise<any> { throw new Error('Not implemented'); }
   async getUserSleepRecords(): Promise<any[]> { return []; }
   async getUserSleepForDate(): Promise<any[]> { return []; }
