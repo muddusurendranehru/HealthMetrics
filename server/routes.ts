@@ -106,7 +106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password: _, ...userResponse } = user;
       
       res.json({ 
-        message: "Login successful", 
+        success: true, 
         user: userResponse 
       });
     } catch (error) {
