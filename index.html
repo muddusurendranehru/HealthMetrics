@@ -148,6 +148,10 @@
                     <label for="signupPassword">Password:</label>
                     <input type="password" id="signupPassword" name="password" required>
                 </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password:</label>
+                    <input type="password" id="signupConfirmPassword" name="confirmPassword" required>
+                </div>
                 <button type="submit" class="btn">Sign Up</button>
                 <div id="signupMessage"></div>
             </form>
@@ -206,9 +210,25 @@
             e.preventDefault();
             
             const formData = new FormData(e.target);
+            const email = formData.get('email');
+            const password = formData.get('password');
+            const confirmPassword = formData.get('confirmPassword');
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                document.getElementById('signupMessage').innerHTML = `<div class="error">Passwords do not match!</div>`;
+                return;
+            }
+
+            // Check password length
+            if (password.length < 6) {
+                document.getElementById('signupMessage').innerHTML = `<div class="error">Password must be at least 6 characters long!</div>`;
+                return;
+            }
+
             const data = {
-                email: formData.get('email'),
-                password: formData.get('password')
+                email: email,
+                password: password
             };
 
             try {
