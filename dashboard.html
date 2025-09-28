@@ -182,22 +182,27 @@
                 
                 <div class="form-group">
                     <label for="calories">Calories:</label>
-                    <input type="number" id="calories" name="calories" required min="0" placeholder="e.g., 350">
+                    <input type="number" id="calories" name="calories" required min="0" step="1" placeholder="350">
                 </div>
                 
                 <div class="form-group">
                     <label for="protein">Protein (g):</label>
-                    <input type="number" id="protein" name="protein" step="0.1" min="0" placeholder="e.g., 25.5">
+                    <input type="number" id="protein" name="protein" step="0.1" min="0" placeholder="25.5">
                 </div>
                 
                 <div class="form-group">
                     <label for="carbs">Carbs (g):</label>
-                    <input type="number" id="carbs" name="carbs" step="0.1" min="0" placeholder="e.g., 30.0">
+                    <input type="number" id="carbs" name="carbs" step="0.1" min="0" placeholder="30.0">
                 </div>
                 
                 <div class="form-group">
                     <label for="fats">Fats (g):</label>
-                    <input type="number" id="fats" name="fats" step="0.1" min="0" placeholder="e.g., 15.2">
+                    <input type="number" id="fats" name="fats" step="0.1" min="0" placeholder="12.5">
+                </div>
+                
+                <div class="form-group">
+                    <label for="mealDate">Meal Date:</label>
+                    <input type="date" id="mealDate" name="mealDate" required>
                 </div>
                 
                 <button type="submit" class="btn">Add Meal</button>
@@ -232,6 +237,9 @@
 
         // Load meals when page loads
         loadMeals();
+        
+        // Set default date to today
+        document.getElementById('mealDate').value = new Date().toISOString().split('T')[0];
 
         // Handle meal form submission
         document.getElementById('mealForm').addEventListener('submit', async (e) => {
@@ -239,15 +247,16 @@
             
             const formData = new FormData(e.target);
             
-            // CRITICAL: Include userId in the request
+            // CRITICAL: Send exact field names and types for Neon database
             const mealData = {
-                userId: user.id,  // Get from localStorage
-                foodItem: formData.get('mealName'),
-                calories: parseInt(formData.get('calories')),
-                protein: formData.get('protein') || "0",
-                carbs: formData.get('carbs') || "0", 
-                fat: formData.get('fats') || "0",
-                mealType: formData.get('mealType')
+                user_id: parseInt(user.id),  // Must be INTEGER
+                meal_name: formData.get('mealName'),  // String
+                meal_type: formData.get('mealType'),  // String: 'breakfast'|'lunch'|'dinner'|'snack'
+                calories: parseInt(formData.get('calories')),  // Must be INTEGER
+                protein_g: parseFloat(formData.get('protein') || "0"),  // Must be DECIMAL
+                carbs_g: parseFloat(formData.get('carbs') || "0"),  // Must be DECIMAL
+                fats_g: parseFloat(formData.get('fats') || "0"),  // Must be DECIMAL
+                meal_date: formData.get('mealDate') || new Date().toISOString().split('T')[0]  // 'YYYY-MM-DD'
             };
 
             console.log('Sending meal data:', mealData);
@@ -296,14 +305,15 @@
                 
                 mealsList.innerHTML = meals.map(meal => `
                     <div class="meal-item">
-                        <h4>${meal.foodItem}</h4>
+                        <h4>${meal.meal_name}</h4>
                         <div class="meal-details">
-                            <strong>Type:</strong> ${meal.mealType || 'Not specified'} | 
+                            <strong>Type:</strong> ${meal.meal_type || 'Not specified'} | 
                             <strong>Calories:</strong> ${meal.calories} | 
-                            <strong>Protein:</strong> ${meal.protein || 0}g | 
-                            <strong>Carbs:</strong> ${meal.carbs || 0}g | 
-                            <strong>Fats:</strong> ${meal.fat || 0}g<br>
-                            <strong>Added:</strong> ${new Date(meal.loggedAt).toLocaleString()}
+                            <strong>Protein:</strong> ${meal.protein_g || 0}g | 
+                            <strong>Carbs:</strong> ${meal.carbs_g || 0}g | 
+                            <strong>Fats:</strong> ${meal.fats_g || 0}g<br>
+                            <strong>Date:</strong> ${meal.meal_date} | 
+                            <strong>Added:</strong> ${new Date(meal.created_at || Date.now()).toLocaleString()}
                         </div>
                     </div>
                 `).join('');

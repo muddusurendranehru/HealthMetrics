@@ -1,0 +1,47 @@
+Fix the app using EXACT data from the Neon meals table:
+
+REAL DATA IN TABLE:
+- user_id: 1 (INTEGER - not UUID!)
+- meal_name: "Grilled Chicken Salad" (STRING)
+- meal_type: "breakfast", "lunch", "dinner", "snack" (STRING - lowercase only)
+- calories: 350, 450, 550 (INTEGER - whole numbers only)
+- protein_g: 12.50, 35.00 (DECIMAL - two decimal places)
+- carbs_g: 55.00, 20.00 (DECIMAL - two decimal places)
+- fats_g: 8.00, 18.00 (DECIMAL - two decimal places)
+- meal_date: "2025-09-28" (DATE string)
+
+FRONTEND MUST MATCH THIS:
+1. Login returns user with INTEGER id:
+   localStorage: {"id": 1, "email": "test@example.com"}
+   NOT: {"id": "uuid-string", "email": "test@example.com"}
+
+2. Meal form HTML:
+   <select name="meal_type">
+     <option value="breakfast">Breakfast</option>
+     <option value="lunch">Lunch</option>
+     <option value="dinner">Dinner</option>
+     <option value="snack">Snack</option>
+   </select>
+   <input type="number" name="calories" min="0" step="1" required>
+   <input type="number" name="protein_g" min="0" step="0.01" required>
+   <input type="number" name="carbs_g" min="0" step="0.01" required>
+   <input type="number" name="fats_g" min="0" step="0.01" required>
+
+3. JavaScript when submitting:
+   const user = JSON.parse(localStorage.getItem('user'));
+   const mealData = {
+     user_id: user.id,  // Must be INTEGER 1, not UUID
+     meal_name: document.getElementById('meal_name').value,
+     meal_type: document.getElementById('meal_type').value,  // lowercase
+     calories: parseInt(document.getElementById('calories').value),
+     protein_g: parseFloat(document.getElementById('protein_g').value),
+     carbs_g: parseFloat(document.getElementById('carbs_g').value),
+     fats_g: parseFloat(document.getElementById('fats_g').value)
+   };
+
+4. Test with actual data:
+   - User test@example.com has id = 1 (INTEGER)
+   - Meals already exist for user_id = 1
+   - New meals must use user_id: 1 (INTEGER)
+
+The database has 5 meals for user_id=1. Make the app work with INTEGER ids, not UUIDs.
