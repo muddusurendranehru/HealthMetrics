@@ -200,7 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password: _, ...userResponse } = user;
       
       res.json({ 
-        message: "Login successful", 
+        success: true, 
         user: userResponse 
       });
     } catch (error) {
@@ -260,9 +260,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/meals", async (req, res) => {
+  app.get("/api/meals/:userId", async (req, res) => {
     try {
-      const userId = req.query.userId as string;
+      const userId = req.params.userId;
       if (!userId) {
         return res.status(400).json({ message: "userId is required" });
       }
