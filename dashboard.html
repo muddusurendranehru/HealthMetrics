@@ -239,15 +239,15 @@
             
             const formData = new FormData(e.target);
             
-            // CRITICAL: Include user_id in the request
+            // CRITICAL: Include userId in the request
             const mealData = {
-                user_id: user.id,  // Get from localStorage
-                meal_name: formData.get('mealName'),
+                userId: user.id,  // Get from localStorage
+                foodItem: formData.get('mealName'),
                 calories: parseInt(formData.get('calories')),
-                protein_g: parseFloat(formData.get('protein')) || 0,
-                carbs_g: parseFloat(formData.get('carbs')) || 0,
-                fats_g: parseFloat(formData.get('fats')) || 0,
-                meal_type: formData.get('mealType')
+                protein: formData.get('protein') || "0",
+                carbs: formData.get('carbs') || "0", 
+                fat: formData.get('fats') || "0",
+                mealType: formData.get('mealType')
             };
 
             console.log('Sending meal data:', mealData);
@@ -296,15 +296,14 @@
                 
                 mealsList.innerHTML = meals.map(meal => `
                     <div class="meal-item">
-                        <h4>${meal.meal_name}</h4>
+                        <h4>${meal.foodItem}</h4>
                         <div class="meal-details">
-                            <strong>Type:</strong> ${meal.meal_type || 'Not specified'} | 
+                            <strong>Type:</strong> ${meal.mealType || 'Not specified'} | 
                             <strong>Calories:</strong> ${meal.calories} | 
-                            <strong>Protein:</strong> ${meal.protein_g || 0}g | 
-                            <strong>Carbs:</strong> ${meal.carbs_g || 0}g | 
-                            <strong>Fats:</strong> ${meal.fats_g || 0}g<br>
-                            <strong>Date:</strong> ${meal.meal_date || 'Today'} | 
-                            <strong>Added:</strong> ${new Date(meal.created_at).toLocaleString()}
+                            <strong>Protein:</strong> ${meal.protein || 0}g | 
+                            <strong>Carbs:</strong> ${meal.carbs || 0}g | 
+                            <strong>Fats:</strong> ${meal.fat || 0}g<br>
+                            <strong>Added:</strong> ${new Date(meal.loggedAt).toLocaleString()}
                         </div>
                     </div>
                 `).join('');
