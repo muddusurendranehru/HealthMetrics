@@ -151,25 +151,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserWaterIntake(userId: string, date?: Date): Promise<WaterIntake[]> {
-    let query = db
-      .select()
-      .from(waterIntake)
-      .where(eq(waterIntake.userId, userId));
-
     if (date) {
       const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
       
-      query = query.where(
-        and(
-          eq(waterIntake.userId, userId),
-          gte(waterIntake.loggedAt, startOfDay),
-          lte(waterIntake.loggedAt, endOfDay)
+      return await db
+        .select()
+        .from(waterIntake)
+        .where(
+          and(
+            eq(waterIntake.userId, userId),
+            gte(waterIntake.loggedAt, startOfDay),
+            lte(waterIntake.loggedAt, endOfDay)
+          )
         )
-      );
+        .orderBy(desc(waterIntake.loggedAt));
     }
 
-    return await query.orderBy(desc(waterIntake.loggedAt));
+    return await db
+      .select()
+      .from(waterIntake)
+      .where(eq(waterIntake.userId, userId))
+      .orderBy(desc(waterIntake.loggedAt));
   }
 }
 
@@ -202,7 +205,14 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const user: User = { 
-      ...insertUser, 
+      email: insertUser.email,
+      password: insertUser.password,
+      firstName: insertUser.firstName ?? null,
+      lastName: insertUser.lastName ?? null,
+      dateOfBirth: insertUser.dateOfBirth ?? null,
+      height: insertUser.height ?? null,
+      goalWeight: insertUser.goalWeight ?? null,
+      activityLevel: insertUser.activityLevel ?? null,
       id,
       createdAt: new Date()
     };
@@ -213,7 +223,14 @@ export class MemStorage implements IStorage {
   async createMeal(insertMeal: InsertMeal): Promise<Meal> {
     const id = randomUUID();
     const meal: Meal = {
-      ...insertMeal,
+      userId: insertMeal.userId,
+      mealType: insertMeal.mealType,
+      foodItem: insertMeal.foodItem,
+      calories: insertMeal.calories,
+      protein: insertMeal.protein ?? null,
+      carbs: insertMeal.carbs ?? null,
+      fat: insertMeal.fat ?? null,
+      portion: insertMeal.portion ?? null,
       id,
       loggedAt: new Date()
     };
@@ -231,7 +248,13 @@ export class MemStorage implements IStorage {
   async createExercise(insertExercise: InsertExercise): Promise<Exercise> {
     const id = randomUUID();
     const exercise: Exercise = {
-      ...insertExercise,
+      userId: insertExercise.userId,
+      exerciseType: insertExercise.exerciseType,
+      exerciseName: insertExercise.exerciseName,
+      duration: insertExercise.duration ?? null,
+      caloriesBurned: insertExercise.caloriesBurned ?? null,
+      intensity: insertExercise.intensity ?? null,
+      notes: insertExercise.notes ?? null,
       id,
       loggedAt: new Date()
     };
@@ -249,7 +272,13 @@ export class MemStorage implements IStorage {
   async createSleepRecord(insertSleepRecord: InsertSleepRecord): Promise<SleepRecord> {
     const id = randomUUID();
     const sleepRecord: SleepRecord = {
-      ...insertSleepRecord,
+      userId: insertSleepRecord.userId,
+      sleepDate: insertSleepRecord.sleepDate,
+      bedtime: insertSleepRecord.bedtime ?? null,
+      wakeTime: insertSleepRecord.wakeTime ?? null,
+      hoursSlept: insertSleepRecord.hoursSlept ?? null,
+      sleepQuality: insertSleepRecord.sleepQuality ?? null,
+      notes: insertSleepRecord.notes ?? null,
       id
     };
     this.sleepRecords.set(id, sleepRecord);
@@ -270,7 +299,9 @@ export class MemStorage implements IStorage {
   async createWeightRecord(insertWeightRecord: InsertWeightTracking): Promise<WeightTracking> {
     const id = randomUUID();
     const weightRecord: WeightTracking = {
-      ...insertWeightRecord,
+      userId: insertWeightRecord.userId,
+      weight: insertWeightRecord.weight,
+      notes: insertWeightRecord.notes ?? null,
       id,
       recordedAt: new Date()
     };
@@ -288,7 +319,9 @@ export class MemStorage implements IStorage {
   async createWaterIntake(insertWaterIntake: InsertWaterIntake): Promise<WaterIntake> {
     const id = randomUUID();
     const waterRecord: WaterIntake = {
-      ...insertWaterIntake,
+      userId: insertWaterIntake.userId,
+      amount: insertWaterIntake.amount,
+      unit: insertWaterIntake.unit ?? null,
       id,
       loggedAt: new Date()
     };
