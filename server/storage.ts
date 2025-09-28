@@ -19,37 +19,37 @@ import {
   type InsertWaterIntake
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte } from "drizzle-orm";
+import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
   // User methods
-  getUser(id: string): Promise<User | undefined>;
+  getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
   // Meal methods
   createMeal(meal: InsertMeal): Promise<Meal>;
-  getUserMeals(userId: string, limit?: number): Promise<Meal[]>;
-  getUserMealsForDate(userId: string, date: string): Promise<Meal[]>;
+  getUserMeals(userId: number, limit?: number): Promise<Meal[]>;
+  getUserMealsForDate(userId: number, date: string): Promise<Meal[]>;
 
   // Exercise methods
   createExercise(exercise: InsertExercise): Promise<Exercise>;
-  getUserExercises(userId: string, limit?: number): Promise<Exercise[]>;
-  getUserExercisesForDate(userId: string, date: string): Promise<Exercise[]>;
+  getUserExercises(userId: number, limit?: number): Promise<Exercise[]>;
+  getUserExercisesForDate(userId: number, date: string): Promise<Exercise[]>;
 
   // Sleep methods
   createSleepRecord(sleepRecord: InsertSleepRecord): Promise<SleepRecord>;
-  getUserSleepRecords(userId: string, limit?: number): Promise<SleepRecord[]>;
-  getUserSleepForDate(userId: string, date: string): Promise<SleepRecord[]>;
+  getUserSleepRecords(userId: number, limit?: number): Promise<SleepRecord[]>;
+  getUserSleepForDate(userId: number, date: string): Promise<SleepRecord[]>;
 
   // Weight tracking methods
   createWeightRecord(weightRecord: InsertWeightTracking): Promise<WeightTracking>;
-  getUserWeightRecords(userId: string, limit?: number): Promise<WeightTracking[]>;
+  getUserWeightRecords(userId: number, limit?: number): Promise<WeightTracking[]>;
 
   // Water intake methods
   createWaterIntake(waterRecord: InsertWaterIntake): Promise<WaterIntake>;
-  getUserWaterIntake(userId: string, date?: Date): Promise<WaterIntake[]>;
+  getUserWaterIntake(userId: number, date?: Date): Promise<WaterIntake[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -427,4 +427,133 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Simple implementation that works with the new INTEGER ID tables (users_new, meals_new)
+export class SimpleIntegerStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    try {
+      const result = await db.execute(sql`SELECT * FROM users_new WHERE id = ${id}`);
+      const user = result.rows[0] as any;
+      return user ? { id: user.id, email: user.email, passwordHash: user.password_hash } : undefined;
+    } catch (error) {
+      console.error('Error getting user:', error);
+      return undefined;
+    }
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    try {
+      const result = await db.execute(sql`SELECT * FROM users_new WHERE email = ${email}`);
+      const user = result.rows[0] as any;
+      return user ? { id: user.id, email: user.email, passwordHash: user.password_hash } : undefined;
+    } catch (error) {
+      console.error('Error getting user by email:', error);
+      return undefined;
+    }
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    try {
+      const result = await db.execute(sql`
+        INSERT INTO users_new (email, password_hash) 
+        VALUES (${insertUser.email}, ${insertUser.passwordHash}) 
+        RETURNING *
+      `);
+      const user = result.rows[0] as any;
+      return { id: user.id, email: user.email, passwordHash: user.password_hash };
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
+  }
+
+  async createMeal(insertMeal: InsertMeal): Promise<Meal> {
+    try {
+      const result = await db.execute(sql`
+        INSERT INTO meals_new (user_id, meal_name, meal_type, calories, protein_g, carbs_g, fats_g, meal_date, notes) 
+        VALUES (${insertMeal.userId}, ${insertMeal.mealName}, ${insertMeal.mealType}, ${insertMeal.calories}, 
+                ${insertMeal.proteinG}, ${insertMeal.carbsG}, ${insertMeal.fatsG}, ${insertMeal.mealDate}, ${insertMeal.notes}) 
+        RETURNING *
+      `);
+      const meal = result.rows[0] as any;
+      return {
+        id: meal.id,
+        userId: meal.user_id,
+        mealName: meal.meal_name,
+        mealType: meal.meal_type,
+        calories: meal.calories,
+        proteinG: meal.protein_g,
+        carbsG: meal.carbs_g,
+        fatsG: meal.fats_g,
+        mealDate: meal.meal_date,
+        notes: meal.notes
+      };
+    } catch (error) {
+      console.error('Error creating meal:', error);
+      throw error;
+    }
+  }
+
+  async getUserMeals(userId: number, limit: number = 50): Promise<Meal[]> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM meals_new WHERE user_id = ${userId} 
+        ORDER BY meal_date DESC, id DESC 
+        LIMIT ${limit}
+      `);
+      return result.rows.map((meal: any) => ({
+        id: meal.id,
+        userId: meal.user_id,
+        mealName: meal.meal_name,
+        mealType: meal.meal_type,
+        calories: meal.calories,
+        proteinG: meal.protein_g,
+        carbsG: meal.carbs_g,
+        fatsG: meal.fats_g,
+        mealDate: meal.meal_date,
+        notes: meal.notes
+      }));
+    } catch (error) {
+      console.error('Error getting user meals:', error);
+      return [];
+    }
+  }
+
+  async getUserMealsForDate(userId: number, date: string): Promise<Meal[]> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM meals_new WHERE user_id = ${userId} AND meal_date = ${date} 
+        ORDER BY id DESC
+      `);
+      return result.rows.map((meal: any) => ({
+        id: meal.id,
+        userId: meal.user_id,
+        mealName: meal.meal_name,
+        mealType: meal.meal_type,
+        calories: meal.calories,
+        proteinG: meal.protein_g,
+        carbsG: meal.carbs_g,
+        fatsG: meal.fats_g,
+        mealDate: meal.meal_date,
+        notes: meal.notes
+      }));
+    } catch (error) {
+      console.error('Error getting user meals for date:', error);
+      return [];
+    }
+  }
+
+  // Stub implementations for other methods
+  async createExercise(): Promise<any> { throw new Error('Not implemented'); }
+  async getUserExercises(): Promise<any[]> { return []; }
+  async getUserExercisesForDate(): Promise<any[]> { return []; }
+  async createSleepRecord(): Promise<any> { throw new Error('Not implemented'); }
+  async getUserSleepRecords(): Promise<any[]> { return []; }
+  async getUserSleepForDate(): Promise<any[]> { return []; }
+  async createWeightRecord(): Promise<any> { throw new Error('Not implemented'); }
+  async getUserWeightRecords(): Promise<any[]> { return []; }
+  async createWaterIntake(): Promise<any> { throw new Error('Not implemented'); }
+  async getUserWaterIntake(): Promise<any[]> { return []; }
+}
+
+// Use the simple storage that works with INTEGER IDs
+export const storage = new SimpleIntegerStorage();

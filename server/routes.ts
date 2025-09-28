@@ -233,37 +233,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('Received meal data:', req.body);
       
-      // Expect exact Neon database field names and types
-      const expectedData = {
-        user_id: parseInt(req.body.user_id), // INTEGER
-        meal_name: req.body.meal_name, // STRING
-        meal_type: req.body.meal_type, // STRING
+      // Prepare data for storage with correct field names
+      const mealData = {
+        userId: parseInt(req.body.user_id), // INTEGER
+        mealName: req.body.meal_name, // STRING
+        mealType: req.body.meal_type, // STRING
         calories: parseInt(req.body.calories), // INTEGER
-        protein_g: parseFloat(req.body.protein_g || 0), // DECIMAL
-        carbs_g: parseFloat(req.body.carbs_g || 0), // DECIMAL
-        fats_g: parseFloat(req.body.fats_g || 0), // DECIMAL
-        meal_date: req.body.meal_date, // DATE 'YYYY-MM-DD'
+        proteinG: req.body.protein_g ? parseFloat(req.body.protein_g) : null, // DECIMAL
+        carbsG: req.body.carbs_g ? parseFloat(req.body.carbs_g) : null, // DECIMAL
+        fatsG: req.body.fats_g ? parseFloat(req.body.fats_g) : null, // DECIMAL
+        mealDate: req.body.meal_date, // DATE 'YYYY-MM-DD'
         notes: req.body.notes || null // TEXT
       };
       
-      console.log('Processed meal data:', expectedData);
+      console.log('Processed meal data for storage:', mealData);
       
-      // For now, return the processed data as confirmation
-      res.status(201).json({
-        id: Date.now(), // Temporary ID
-        ...expectedData,
-        created_at: new Date().toISOString()
-      });
+      // Save to database using storage interface
+      const meal = await storage.createMeal(mealData);
+      console.log('Created meal:', meal);
+      
+      res.status(201).json(meal);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Validation error", 
-          errors: error.errors 
-        });
-      }
       console.error("Create meal error:", error);
       res.status(500).json({ 
-        message: "Internal server error" 
+        message: "Internal server error",
+        error: error.message 
       });
     }
   });
@@ -277,28 +271,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('Fetching meals for user_id:', userId);
       
-      // For now, return mock data in the exact format the frontend expects
-      const mockMeals = [
-        {
-          id: 1,
-          user_id: userId,
-          meal_name: "Sample Meal",
-          meal_type: "lunch",
-          calories: 350,
-          protein_g: 25.5,
-          carbs_g: 30.0,
-          fats_g: 12.5,
-          meal_date: new Date().toISOString().split('T')[0],
-          notes: "Sample meal",
-          created_at: new Date().toISOString()
-        }
-      ];
+      // Get meals from database using storage interface
+      const meals = await storage.getUserMeals(userId);
+      console.log(`Found ${meals.length} meals for user ${userId}`);
       
-      res.json(mockMeals);
+      res.json(meals);
     } catch (error) {
       console.error("Get meals error:", error);
       res.status(500).json({ 
-        message: "Internal server error" 
+        message: "Internal server error",
+        error: error.message 
       });
     }
   });
