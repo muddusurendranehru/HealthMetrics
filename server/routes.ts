@@ -1,10 +1,16 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema } from "@shared/schema";
+import { insertUserSchema, insertMealSchema, insertExerciseSchema, insertSleepRecordSchema, insertWeightTrackingSchema, insertWaterIntakeSchema } from "@shared/schema";
 import { z } from "zod";
+import bcrypt from "bcrypt";
 
 const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+const signupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
@@ -18,7 +24,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User signup
   app.post("/api/signup", async (req, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
+      const userData = signupSchema.parse(req.body);
       
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(userData.email);
@@ -28,8 +34,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // TODO: Hash password before storing
-      const user = await storage.createUser(userData);
+      // Hash password before storing
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
+      
+      const userToCreate = {
+        email: userData.email,
+        password: hashedPassword,
+        firstName: null,
+        lastName: null,
+        dateOfBirth: null,
+        height: null,
+        goalWeight: null,
+        activityLevel: null
+      };
+      
+      const user = await storage.createUser(userToCreate);
       
       // Don't return password in response
       const { password, ...userResponse } = user;
@@ -65,8 +85,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // TODO: Compare hashed password
-      if (user.password !== password) {
+      // Compare hashed password
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
         return res.status(401).json({ 
           message: "Invalid email or password" 
         });
@@ -110,6 +131,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(userResponse);
     } catch (error) {
       console.error("Get user error:", error);
+      res.status(500).json({ 
+        message: "Internal server error" 
+      });
+    }
+  });
+
+  // Meal routes
+  app.post("/api/meals", async (req, res) => {
+    try {
+      const mealData = insertMealSchema.parse(req.body);
+      const meal = await storage.createMeal(mealData);
+      res.status(201).json(meal);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error("Create meal error:", error);
+      res.status(500).json({ 
+        message: "Internal server error" 
+      });
+    }
+  });
+
+  // Exercise routes
+  app.post("/api/exercises", async (req, res) => {
+    try {
+      const exerciseData = insertExerciseSchema.parse(req.body);
+      const exercise = await storage.createExercise(exerciseData);
+      res.status(201).json(exercise);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error("Create exercise error:", error);
+      res.status(500).json({ 
+        message: "Internal server error" 
+      });
+    }
+  });
+
+  // Sleep routes
+  app.post("/api/sleep", async (req, res) => {
+    try {
+      const sleepData = insertSleepRecordSchema.parse(req.body);
+      const sleepRecord = await storage.createSleepRecord(sleepData);
+      res.status(201).json(sleepRecord);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error("Create sleep record error:", error);
+      res.status(500).json({ 
+        message: "Internal server error" 
+      });
+    }
+  });
+
+  // Weight routes
+  app.post("/api/weight", async (req, res) => {
+    try {
+      const weightData = insertWeightTrackingSchema.parse(req.body);
+      const weightRecord = await storage.createWeightRecord(weightData);
+      res.status(201).json(weightRecord);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error("Create weight record error:", error);
+      res.status(500).json({ 
+        message: "Internal server error" 
+      });
+    }
+  });
+
+  // Water intake routes
+  app.post("/api/water", async (req, res) => {
+    try {
+      const waterData = insertWaterIntakeSchema.parse(req.body);
+      const waterRecord = await storage.createWaterIntake(waterData);
+      res.status(201).json(waterRecord);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error("Create water intake error:", error);
+      res.status(500).json({ 
+        message: "Internal server error" 
+      });
+    }
+  });
+
+  // Get recent data for dashboard
+  app.get("/api/recent/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      
+      const [meals, exercises, sleepRecords, weightRecords, waterIntake] = await Promise.all([
+        storage.getUserMeals(userId, 5),
+        storage.getUserExercises(userId, 5),
+        storage.getUserSleepRecords(userId, 5),
+        storage.getUserWeightRecords(userId, 5),
+        storage.getUserWaterIntake(userId)
+      ]);
+
+      res.json({
+        meals,
+        exercises,
+        sleepRecords,
+        weightRecords,
+        waterIntake: waterIntake.slice(0, 5)
+      });
+    } catch (error) {
+      console.error("Get recent data error:", error);
       res.status(500).json({ 
         message: "Internal server error" 
       });
