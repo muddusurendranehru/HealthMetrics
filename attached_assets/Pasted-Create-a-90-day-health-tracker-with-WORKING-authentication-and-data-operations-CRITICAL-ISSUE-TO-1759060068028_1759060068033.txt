@@ -1,0 +1,65 @@
+Create a 90-day health tracker with WORKING authentication and data operations.
+
+CRITICAL ISSUE TO SOLVE: Auth works, backend works, but after login the user_id is not being passed correctly from frontend to backend for insert/fetch operations.
+
+Database: postgresql://neondb_owner:npg_Bl9kug4wxKzN@ep-weathered-paper-a1mbh5zv-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+
+Tables exist: users, meals, exercises, sleep_records
+
+BACKEND (server.js):
+1. POST /api/signup
+   - Receive: {email, password}
+   - Hash password with bcrypt
+   - INSERT INTO users, return {id, email}
+
+2. POST /api/login  
+   - Receive: {email, password}
+   - Verify with bcrypt
+   - CRITICAL: Return {success: true, user: {id: X, email: "email"}}
+
+3. POST /api/meals
+   - CRITICAL: Extract user_id from request body
+   - INSERT INTO meals (user_id, meal_name, calories, protein_g, carbs_g, fats_g)
+
+4. GET /api/meals/:userId
+   - SELECT * FROM meals WHERE user_id = :userId
+
+FRONTEND:
+1. index.html - Landing page
+   - Signup form: email, password, confirm password (all required)
+   - Login form: email, password
+   - On successful login: 
+     localStorage.setItem('user', JSON.stringify(response.user));
+     window.location.href = '/dashboard.html';
+
+2. dashboard.html - Two boxes layout
+   LEFT BOX: Add Data
+   - Meal form: name, calories, protein, carbs, fats
+   - Exercise form: name, type, duration, calories
+   - Sleep form: date, hours, quality
+   
+   CRITICAL: When submitting any form:
+   const user = JSON.parse(localStorage.getItem('user'));
+   fetch('/api/meals', {
+     method: 'POST',
+     body: JSON.stringify({
+       user_id: user.id,  // THIS IS CRITICAL!
+       meal_name: mealName,
+       calories: calories
+     })
+   });
+
+   RIGHT BOX: View Data
+   - On page load:
+     const user = JSON.parse(localStorage.getItem('user'));
+     fetch(`/api/meals/${user.id}`)  // Pass user.id in URL
+   - Display meals list
+   - Logout button: localStorage.clear(); redirect to index.html
+
+KEY SOLUTION: 
+- Login must return user object with id
+- Store complete user object in localStorage
+- Every API call must include user.id from localStorage
+- Backend must extract user_id from request
+
+Test with: test@example.com (id=1 exists in database)

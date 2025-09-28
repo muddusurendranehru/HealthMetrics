@@ -54,38 +54,6 @@
             padding-bottom: 10px;
         }
 
-        .form-tabs {
-            margin-bottom: 20px;
-        }
-
-        .tab-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            padding: 8px 16px;
-            background: #f0f0f0;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .tab-btn.active {
-            background: #667eea;
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
         .form-group {
             margin-bottom: 15px;
         }
@@ -113,52 +81,34 @@
         .btn {
             background: #667eea;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
+            width: 100%;
         }
 
         .btn:hover {
             background: #5a6fd8;
         }
 
-        .btn-logout {
-            background: #e74c3c;
-            margin-top: 20px;
-            width: 100%;
-        }
-
-        .btn-logout:hover {
-            background: #c0392b;
-        }
-
-        .data-section {
-            margin-bottom: 25px;
-        }
-
-        .data-section h3 {
-            color: #555;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .data-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .data-item {
+        .meal-item {
             background: #f8f9fa;
-            padding: 10px;
-            margin-bottom: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
             border-radius: 5px;
             border-left: 4px solid #667eea;
         }
 
-        .data-item strong {
+        .meal-item h4 {
             color: #333;
+            margin-bottom: 5px;
+        }
+
+        .meal-details {
+            color: #666;
+            font-size: 13px;
         }
 
         .message {
@@ -180,6 +130,15 @@
             border: 1px solid #f5c6cb;
         }
 
+        .logout-btn {
+            background: #e74c3c;
+            margin-top: 20px;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: 1fr;
@@ -193,360 +152,174 @@
 </head>
 <body>
     <div class="header">
-        <h1>90-Day Health Tracker</h1>
+        <h1>Health Tracker Dashboard</h1>
         <div class="user-info">
-            Welcome, <span id="userEmail"></span>
+            Welcome, <span id="userEmail"></span> (ID: <span id="userId"></span>)
         </div>
     </div>
 
     <div class="dashboard">
-        <!-- LEFT BOX: Add Data Forms -->
+        <!-- LEFT BOX: Add Meal Form -->
         <div class="box">
-            <h2>📝 Add Data</h2>
+            <h2>🍽️ Add Meal</h2>
             
-            <div class="tab-buttons">
-                <button class="tab-btn active" onclick="showTab('meal')">Meal</button>
-                <button class="tab-btn" onclick="showTab('exercise')">Exercise</button>
-                <button class="tab-btn" onclick="showTab('sleep')">Sleep</button>
-            </div>
-
-            <!-- Meal Form -->
-            <div id="mealTab" class="tab-content active">
-                <form id="mealForm">
-                    <div class="form-group">
-                        <label for="mealType">Meal Type:</label>
-                        <select id="mealType" name="mealType" required>
-                            <option value="">Select meal type</option>
-                            <option value="breakfast">Breakfast</option>
-                            <option value="lunch">Lunch</option>
-                            <option value="dinner">Dinner</option>
-                            <option value="snack">Snack</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="foodItem">Food Item:</label>
-                        <input type="text" id="foodItem" name="foodItem" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="calories">Calories:</label>
-                        <input type="number" id="calories" name="calories" required min="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="protein">Protein (g):</label>
-                        <input type="number" id="protein" name="protein" step="0.1" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="carbs">Carbs (g):</label>
-                        <input type="number" id="carbs" name="carbs" step="0.1" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="fat">Fat (g):</label>
-                        <input type="number" id="fat" name="fat" step="0.1" min="0">
-                    </div>
-                    <button type="submit" class="btn">Add Meal</button>
-                    <div id="mealMessage"></div>
-                </form>
-            </div>
-
-            <!-- Exercise Form -->
-            <div id="exerciseTab" class="tab-content">
-                <form id="exerciseForm">
-                    <div class="form-group">
-                        <label for="exerciseType">Exercise Type:</label>
-                        <select id="exerciseType" name="exerciseType" required>
-                            <option value="">Select exercise type</option>
-                            <option value="cardio">Cardio</option>
-                            <option value="strength">Strength Training</option>
-                            <option value="flexibility">Flexibility/Stretching</option>
-                            <option value="sports">Sports</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="exerciseName">Exercise Name:</label>
-                        <input type="text" id="exerciseName" name="exerciseName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="duration">Duration (minutes):</label>
-                        <input type="number" id="duration" name="duration" required min="1">
-                    </div>
-                    <div class="form-group">
-                        <label for="caloriesBurned">Calories Burned:</label>
-                        <input type="number" id="caloriesBurned" name="caloriesBurned" min="0">
-                    </div>
-                    <button type="submit" class="btn">Add Exercise</button>
-                    <div id="exerciseMessage"></div>
-                </form>
-            </div>
-
-            <!-- Sleep Form -->
-            <div id="sleepTab" class="tab-content">
-                <form id="sleepForm">
-                    <div class="form-group">
-                        <label for="sleepDate">Date:</label>
-                        <input type="date" id="sleepDate" name="sleepDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="hoursSlept">Hours Slept:</label>
-                        <input type="number" id="hoursSlept" name="hoursSlept" step="0.5" min="0" max="24" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="sleepQuality">Sleep Quality (1-5):</label>
-                        <select id="sleepQuality" name="sleepQuality" required>
-                            <option value="">Rate your sleep</option>
-                            <option value="1">1 - Very Poor</option>
-                            <option value="2">2 - Poor</option>
-                            <option value="3">3 - Fair</option>
-                            <option value="4">4 - Good</option>
-                            <option value="5">5 - Excellent</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn">Add Sleep Record</button>
-                    <div id="sleepMessage"></div>
-                </form>
-            </div>
+            <form id="mealForm">
+                <div class="form-group">
+                    <label for="mealType">Meal Type:</label>
+                    <select id="mealType" name="mealType" required>
+                        <option value="">Select meal type</option>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="snack">Snack</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mealName">Meal Name:</label>
+                    <input type="text" id="mealName" name="mealName" required placeholder="e.g., Chicken Sandwich">
+                </div>
+                
+                <div class="form-group">
+                    <label for="calories">Calories:</label>
+                    <input type="number" id="calories" name="calories" required min="0" placeholder="e.g., 350">
+                </div>
+                
+                <div class="form-group">
+                    <label for="protein">Protein (g):</label>
+                    <input type="number" id="protein" name="protein" step="0.1" min="0" placeholder="e.g., 25.5">
+                </div>
+                
+                <div class="form-group">
+                    <label for="carbs">Carbs (g):</label>
+                    <input type="number" id="carbs" name="carbs" step="0.1" min="0" placeholder="e.g., 30.0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="fats">Fats (g):</label>
+                    <input type="number" id="fats" name="fats" step="0.1" min="0" placeholder="e.g., 15.2">
+                </div>
+                
+                <button type="submit" class="btn">Add Meal</button>
+                <div id="mealMessage"></div>
+            </form>
+            
+            <button class="btn logout-btn" onclick="logout()">Logout</button>
         </div>
 
-        <!-- RIGHT BOX: View Today's Data -->
+        <!-- RIGHT BOX: Meals List -->
         <div class="box">
-            <h2>📊 Today's Data</h2>
-            
-            <!-- Meals Section -->
-            <div class="data-section">
-                <h3>🍽️ Meals</h3>
-                <div id="todayMeals" class="data-list">
-                    <!-- Meals will be loaded here -->
-                </div>
+            <h2>📊 Your Meals</h2>
+            <div id="mealsList">
+                <!-- Meals will be loaded here -->
             </div>
-
-            <!-- Exercises Section -->
-            <div class="data-section">
-                <h3>💪 Exercises</h3>
-                <div id="todayExercises" class="data-list">
-                    <!-- Exercises will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Sleep Section -->
-            <div class="data-section">
-                <h3>😴 Sleep</h3>
-                <div id="todaySleep" class="data-list">
-                    <!-- Sleep will be loaded here -->
-                </div>
-            </div>
-
-            <button class="btn btn-logout" onclick="logout()">Logout</button>
+            <button class="btn" onclick="loadMeals()" style="margin-top: 20px;">Refresh Meals</button>
         </div>
     </div>
 
     <script>
-        // Check if user is logged in
-        const userId = localStorage.getItem('userId');
-        const userEmail = localStorage.getItem('userEmail');
-
-        if (!userId) {
+        // Check if user is logged in and get user data
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        if (!user.id) {
+            alert('Please log in first');
             window.location.href = '/';
         }
 
-        document.getElementById('userEmail').textContent = userEmail;
+        // Display user info
+        document.getElementById('userEmail').textContent = user.email || '';
+        document.getElementById('userId').textContent = user.id || '';
 
-        // Set today's date as default for sleep form
-        document.getElementById('sleepDate').value = new Date().toISOString().split('T')[0];
+        // Load meals when page loads
+        loadMeals();
 
-        // Tab functionality
-        function showTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Remove active class from all buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Show selected tab and mark button as active
-            document.getElementById(tabName + 'Tab').classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        // Load today's data
-        async function loadTodayData() {
-            try {
-                // Load meals
-                const mealsResponse = await fetch(`/api/meals?userId=${userId}`);
-                const meals = await mealsResponse.json();
-                displayMeals(meals);
-
-                // Load exercises
-                const exercisesResponse = await fetch(`/api/exercises?userId=${userId}`);
-                const exercises = await exercisesResponse.json();
-                displayExercises(exercises);
-
-                // Load sleep
-                const sleepResponse = await fetch(`/api/sleep?userId=${userId}`);
-                const sleep = await sleepResponse.json();
-                displaySleep(sleep);
-            } catch (error) {
-                console.error('Error loading data:', error);
-            }
-        }
-
-        function displayMeals(meals) {
-            const container = document.getElementById('todayMeals');
-            if (meals.length === 0) {
-                container.innerHTML = '<div class="data-item">No meals logged today</div>';
-                return;
-            }
-            
-            container.innerHTML = meals.map(meal => `
-                <div class="data-item">
-                    <strong>${meal.meal_type}</strong>: ${meal.food_item}<br>
-                    Calories: ${meal.calories} | Protein: ${meal.protein || 0}g | Carbs: ${meal.carbs || 0}g | Fat: ${meal.fat || 0}g
-                </div>
-            `).join('');
-        }
-
-        function displayExercises(exercises) {
-            const container = document.getElementById('todayExercises');
-            if (exercises.length === 0) {
-                container.innerHTML = '<div class="data-item">No exercises logged today</div>';
-                return;
-            }
-            
-            container.innerHTML = exercises.map(exercise => `
-                <div class="data-item">
-                    <strong>${exercise.exercise_name}</strong> (${exercise.exercise_type})<br>
-                    Duration: ${exercise.duration} min | Calories: ${exercise.calories_burned || 0}
-                </div>
-            `).join('');
-        }
-
-        function displaySleep(sleep) {
-            const container = document.getElementById('todaySleep');
-            if (sleep.length === 0) {
-                container.innerHTML = '<div class="data-item">No sleep records for today</div>';
-                return;
-            }
-            
-            container.innerHTML = sleep.map(record => `
-                <div class="data-item">
-                    <strong>Sleep Record</strong><br>
-                    Hours: ${record.hours_slept} | Quality: ${record.sleep_quality}/5
-                </div>
-            `).join('');
-        }
-
-        // Form submissions
+        // Handle meal form submission
         document.getElementById('mealForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const formData = new FormData(e.target);
-            const data = {
-                userId: userId,
-                mealType: formData.get('mealType'),
-                foodItem: formData.get('foodItem'),
+            
+            // CRITICAL: Include user_id in the request
+            const mealData = {
+                user_id: user.id,  // Get from localStorage
+                meal_name: formData.get('mealName'),
                 calories: parseInt(formData.get('calories')),
-                protein: parseFloat(formData.get('protein')) || 0,
-                carbs: parseFloat(formData.get('carbs')) || 0,
-                fat: parseFloat(formData.get('fat')) || 0
+                protein_g: parseFloat(formData.get('protein')) || 0,
+                carbs_g: parseFloat(formData.get('carbs')) || 0,
+                fats_g: parseFloat(formData.get('fats')) || 0,
+                meal_type: formData.get('mealType')
             };
+
+            console.log('Sending meal data:', mealData);
 
             try {
                 const response = await fetch('/api/meals', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(mealData)
                 });
 
                 const result = await response.json();
                 
                 if (response.ok) {
                     document.getElementById('mealMessage').innerHTML = '<div class="message success">Meal added successfully!</div>';
-                    e.target.reset();
-                    loadTodayData();
+                    e.target.reset(); // Clear form
+                    loadMeals(); // Refresh meals list
                 } else {
                     document.getElementById('mealMessage').innerHTML = `<div class="message error">${result.message}</div>`;
                 }
             } catch (error) {
-                document.getElementById('mealMessage').innerHTML = '<div class="message error">Failed to add meal</div>';
+                console.error('Error adding meal:', error);
+                document.getElementById('mealMessage').innerHTML = '<div class="message error">Failed to add meal. Please try again.</div>';
             }
         });
 
-        document.getElementById('exerciseForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(e.target);
-            const data = {
-                userId: userId,
-                exerciseType: formData.get('exerciseType'),
-                exerciseName: formData.get('exerciseName'),
-                duration: parseInt(formData.get('duration')),
-                caloriesBurned: parseInt(formData.get('caloriesBurned')) || 0
-            };
-
+        // Function to load meals
+        async function loadMeals() {
             try {
-                const response = await fetch('/api/exercises', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                const result = await response.json();
+                console.log('Loading meals for user_id:', user.id);
                 
-                if (response.ok) {
-                    document.getElementById('exerciseMessage').innerHTML = '<div class="message success">Exercise added successfully!</div>';
-                    e.target.reset();
-                    loadTodayData();
-                } else {
-                    document.getElementById('exerciseMessage').innerHTML = `<div class="message error">${result.message}</div>`;
-                }
-            } catch (error) {
-                document.getElementById('exerciseMessage').innerHTML = '<div class="message error">Failed to add exercise</div>';
-            }
-        });
-
-        document.getElementById('sleepForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(e.target);
-            const data = {
-                userId: userId,
-                sleepDate: formData.get('sleepDate'),
-                hoursSlept: parseFloat(formData.get('hoursSlept')),
-                sleepQuality: parseInt(formData.get('sleepQuality'))
-            };
-
-            try {
-                const response = await fetch('/api/sleep', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                const result = await response.json();
+                // CRITICAL: Include user_id in the request
+                const response = await fetch(`/api/meals/${user.id}`);
+                const meals = await response.json();
                 
-                if (response.ok) {
-                    document.getElementById('sleepMessage').innerHTML = '<div class="message success">Sleep record added successfully!</div>';
-                    e.target.reset();
-                    document.getElementById('sleepDate').value = new Date().toISOString().split('T')[0];
-                    loadTodayData();
-                } else {
-                    document.getElementById('sleepMessage').innerHTML = `<div class="message error">${result.message}</div>`;
+                console.log('Loaded meals:', meals);
+                
+                const mealsList = document.getElementById('mealsList');
+                
+                if (meals.length === 0) {
+                    mealsList.innerHTML = '<p>No meals recorded yet. Add your first meal!</p>';
+                    return;
                 }
+                
+                mealsList.innerHTML = meals.map(meal => `
+                    <div class="meal-item">
+                        <h4>${meal.meal_name}</h4>
+                        <div class="meal-details">
+                            <strong>Type:</strong> ${meal.meal_type || 'Not specified'} | 
+                            <strong>Calories:</strong> ${meal.calories} | 
+                            <strong>Protein:</strong> ${meal.protein_g || 0}g | 
+                            <strong>Carbs:</strong> ${meal.carbs_g || 0}g | 
+                            <strong>Fats:</strong> ${meal.fats_g || 0}g<br>
+                            <strong>Date:</strong> ${meal.meal_date || 'Today'} | 
+                            <strong>Added:</strong> ${new Date(meal.created_at).toLocaleString()}
+                        </div>
+                    </div>
+                `).join('');
+                
             } catch (error) {
-                document.getElementById('sleepMessage').innerHTML = '<div class="message error">Failed to add sleep record</div>';
+                console.error('Error loading meals:', error);
+                document.getElementById('mealsList').innerHTML = '<div class="message error">Failed to load meals.</div>';
             }
-        });
-
-        function logout() {
-            localStorage.removeItem('userId');
-            localStorage.removeItem('userEmail');
-            window.location.href = '/';
         }
 
-        // Load data when page loads
-        loadTodayData();
+        // Logout function
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
     </script>
 </body>
 </html>
