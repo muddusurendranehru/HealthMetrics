@@ -1,0 +1,67 @@
+Add sleep tracking to health dashboard. Follow STRICT RULES - NO DUMMY DATA.
+
+SLEEP_RECORDS TABLE STRUCTURE (from Neon):
+- id: INTEGER (auto-increment)
+- user_id: INTEGER (required - must match logged in user)
+- sleep_date: DATE (required, UNIQUE per user/date)
+- bedtime: TIMESTAMP
+- wake_time: TIMESTAMP  
+- total_hours: NUMERIC (decimal like 7.5)
+- sleep_quality: INTEGER (1-5 only)
+- deep_sleep_hours: NUMERIC (decimal)
+- rem_sleep_hours: NUMERIC (decimal)
+- awake_count: INTEGER
+- notes: TEXT
+- created_at: TIMESTAMP
+
+STRICT IMPLEMENTATION RULES:
+
+1. FRONTEND (dashboard.html):
+   Add sleep form with:
+   <input type="date" name="sleep_date" required>
+   <input type="time" name="bedtime" required>
+   <input type="time" name="wake_time" required>
+   <select name="sleep_quality" required>
+     <option value="1">1 - Very Poor</option>
+     <option value="2">2 - Poor</option>
+     <option value="3">3 - Fair</option>
+     <option value="4">4 - Good</option>
+     <option value="5">5 - Excellent</option>
+   </select>
+   <textarea name="notes"></textarea>
+
+2. JAVASCRIPT SUBMISSION:
+   const user = JSON.parse(localStorage.getItem('user'));
+   const sleepData = {
+     user_id: user.id,  // MUST be INTEGER from localStorage
+     sleep_date: document.getElementById('sleep_date').value,
+     bedtime: `${sleep_date} ${bedtime_value}:00`,
+     wake_time: `${sleep_date} ${waketime_value}:00`,
+     total_hours: calculateHours(bedtime, waketime),
+     sleep_quality: parseInt(quality_value),
+     notes: notes_value
+   };
+
+3. BACKEND (POST /api/sleep):
+   - Log received data: console.log('Sleep data received:', req.body);
+   - Check for existing record: SELECT * FROM sleep_records WHERE user_id = ? AND sleep_date = ?
+   - If exists: UPDATE sleep_records SET ... WHERE user_id = ? AND sleep_date = ?
+   - If not: INSERT INTO sleep_records (user_id, sleep_date, bedtime, wake_time, total_hours, sleep_quality, notes)
+   - RETURN the actual database record, not fake data
+
+4. DISPLAY REAL DATA:
+   - GET /api/sleep/:userId must SELECT from database
+   - Show actual sleep records from database
+   - No hardcoded example data
+
+5. TESTING:
+   After adding sleep record, verify with:
+   SELECT * FROM sleep_records WHERE user_id = 3;
+
+CRITICAL: 
+- Every sleep record MUST save to Neon database
+- Display ONLY real data from database
+- One sleep record per day per user (UNIQUE constraint)
+- Use the logged-in user's ID (3 for raoranga189@gmail.com)
+
+The app must actually INSERT/UPDATE in database and show real records, not fake data.
