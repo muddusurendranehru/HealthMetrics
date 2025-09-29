@@ -194,7 +194,11 @@
                 
                 <div class="form-group">
                     <label for="mealName">Meal Name:</label>
-                    <input type="text" id="mealName" name="mealName" required placeholder="e.g., Chicken Sandwich">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="mealName" name="mealName" required placeholder="e.g., Chicken Sandwich" style="flex: 1;">
+                        <button type="button" onclick="lookupFood()" class="btn" style="background: #667eea; padding: 8px 12px; font-size: 12px; white-space: nowrap;">🔍 Lookup Food</button>
+                    </div>
+                    <div id="foodResults" style="display: none; border: 1px solid #ddd; border-radius: 5px; max-height: 200px; overflow-y: auto; background: white; margin-top: 5px;"></div>
                 </div>
                 
                 <div class="form-group">
@@ -626,6 +630,78 @@
             // Set today's date as default
             document.getElementById('sleep_date').value = new Date().toISOString().split('T')[0];
             loadSleepRecords(); // Load existing records
+        }
+
+        // Food lookup functionality
+        async function lookupFood() {
+            const mealName = document.getElementById('mealName').value.trim();
+            if (!mealName) {
+                alert('Please enter a food name to search for');
+                return;
+            }
+
+            try {
+                console.log('Looking up food:', mealName);
+                const response = await fetch(`/api/food/${encodeURIComponent(mealName)}`);
+                const foods = await response.json();
+                
+                console.log('Food search results:', foods);
+                
+                const resultsDiv = document.getElementById('foodResults');
+                
+                if (foods.length === 0) {
+                    resultsDiv.innerHTML = '<div style="padding: 10px; color: #666;">No foods found matching "' + mealName + '"</div>';
+                } else {
+                    resultsDiv.innerHTML = foods.map(food => `
+                        <div onclick="selectFood(${JSON.stringify(food).replace(/"/g, '&quot;')})" 
+                             style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; hover: background-color: #f5f5f5;"
+                             onmouseover="this.style.backgroundColor='#f5f5f5'" 
+                             onmouseout="this.style.backgroundColor='white'">
+                            <strong>${food.foodName}</strong><br>
+                            <small>Calories: ${food.calories} | Protein: ${food.proteinG}g | Carbs: ${food.carbsG}g | Fats: ${food.fatsG}g</small>
+                        </div>
+                    `).join('');
+                }
+                
+                resultsDiv.style.display = 'block';
+                
+                // Hide results when clicking outside
+                setTimeout(() => {
+                    document.addEventListener('click', function hideResults(e) {
+                        if (!resultsDiv.contains(e.target) && e.target.id !== 'mealName') {
+                            resultsDiv.style.display = 'none';
+                            document.removeEventListener('click', hideResults);
+                        }
+                    });
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error looking up food:', error);
+                alert('Failed to lookup food. Please try again.');
+            }
+        }
+
+        // Auto-fill nutrition values when food is selected
+        function selectFood(food) {
+            console.log('Selected food:', food);
+            
+            // Auto-fill the nutrition fields
+            document.getElementById('mealName').value = food.foodName;
+            document.getElementById('calories').value = food.calories;
+            document.getElementById('protein').value = food.proteinG || '';
+            document.getElementById('carbs').value = food.carbsG || '';
+            document.getElementById('fats').value = food.fatsG || '';
+            
+            // Hide the results
+            document.getElementById('foodResults').style.display = 'none';
+            
+            // Show success message
+            document.getElementById('mealMessage').innerHTML = '<div class="message success">Nutrition values auto-filled! You can adjust them before saving.</div>';
+            
+            // Clear the message after 3 seconds
+            setTimeout(() => {
+                document.getElementById('mealMessage').innerHTML = '';
+            }, 3000);
         }
 
         // Logout function

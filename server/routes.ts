@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 import { insertUserSchema, insertMealSchema, insertExerciseSchema, insertSleepRecordSchema, insertWeightTrackingSchema, insertWaterIntakeSchema } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcrypt";
@@ -387,6 +389,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(sleepRecords);
     } catch (error) {
       console.error("Get sleep records error:", error);
+      res.status(500).json({ 
+        message: "Internal server error",
+        error: error.message 
+      });
+    }
+  });
+
+  // Food lookup route
+  app.get("/api/food/:name", async (req, res) => {
+    try {
+      const foodName = req.params.name.toLowerCase();
+      console.log('Looking up food:', foodName);
+      
+      // Search food_nutrition table using raw SQL for LIKE search
+      const result = await db.execute(sql`
+        SELECT * FROM food_nutrition 
+        WHERE LOWER(food_name) LIKE ${`%${foodName}%`}
+        ORDER BY 
+          CASE WHEN LOWER(food_name) = ${foodName} THEN 1 ELSE 2 END,
+          food_name
+        LIMIT 10
+      `);
+      
+      const foods = result.rows.map((row: any) => ({
+        id: row.id,
+        foodName: row.food_name,
+        calories: row.calories,
+        proteinG: row.protein_g,
+        carbsG: row.carbs_g,
+        fatsG: row.fats_g
+      }));
+      
+      console.log(`Found ${foods.length} foods matching "${foodName}"`);
+      res.json(foods);
+    } catch (error) {
+      console.error("Food lookup error:", error);
       res.status(500).json({ 
         message: "Internal server error",
         error: error.message 
