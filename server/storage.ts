@@ -612,9 +612,113 @@ export class SimpleIntegerStorage implements IStorage {
       return [];
     }
   }
-  async createSleepRecord(): Promise<any> { throw new Error('Not implemented'); }
-  async getUserSleepRecords(): Promise<any[]> { return []; }
-  async getUserSleepForDate(): Promise<any[]> { return []; }
+  async createSleepRecord(sleepData: any): Promise<any> {
+    try {
+      console.log('Creating sleep record in database:', sleepData);
+      
+      // Check for existing sleep record for this user/date
+      const existingResult = await db.execute(sql`
+        SELECT * FROM sleep_records WHERE user_id = ${sleepData.userId.toString()} AND sleep_date = ${sleepData.sleepDate}
+      `);
+      
+      if (existingResult.rows.length > 0) {
+        // Update existing record
+        const updateResult = await db.execute(sql`
+          UPDATE sleep_records 
+          SET bedtime = ${sleepData.bedtime}, 
+              wake_time = ${sleepData.wakeTime},
+              hours_slept = ${sleepData.totalHours},
+              sleep_quality = ${sleepData.sleepQuality},
+              notes = ${sleepData.notes || null}
+          WHERE user_id = ${sleepData.userId.toString()} AND sleep_date = ${sleepData.sleepDate}
+          RETURNING *
+        `);
+        const updated = updateResult.rows[0] as any;
+        console.log('Updated sleep record:', updated);
+        return {
+          id: updated.id,
+          userId: parseInt(updated.user_id),
+          sleepDate: updated.sleep_date,
+          bedtime: updated.bedtime,
+          wakeTime: updated.wake_time,
+          totalHours: updated.hours_slept,
+          sleepQuality: updated.sleep_quality,
+          notes: updated.notes
+        };
+      } else {
+        // Create new record
+        const insertResult = await db.execute(sql`
+          INSERT INTO sleep_records (id, user_id, sleep_date, bedtime, wake_time, hours_slept, sleep_quality, notes)
+          VALUES (${randomUUID()}, ${sleepData.userId.toString()}, ${sleepData.sleepDate}, ${sleepData.bedtime}, ${sleepData.wakeTime}, ${sleepData.totalHours}, ${sleepData.sleepQuality}, ${sleepData.notes || null})
+          RETURNING *
+        `);
+        const created = insertResult.rows[0] as any;
+        console.log('Created sleep record:', created);
+        return {
+          id: created.id,
+          userId: parseInt(created.user_id),
+          sleepDate: created.sleep_date,
+          bedtime: created.bedtime,
+          wakeTime: created.wake_time,
+          totalHours: created.hours_slept,
+          sleepQuality: created.sleep_quality,
+          notes: created.notes
+        };
+      }
+    } catch (error) {
+      console.error('Error creating sleep record:', error);
+      throw error;
+    }
+  }
+
+  async getUserSleepRecords(userId: number, limit: number = 50): Promise<any[]> {
+    try {
+      console.log('Fetching sleep records for user_id:', userId);
+      const result = await db.execute(sql`
+        SELECT * FROM sleep_records WHERE user_id = ${userId.toString()} 
+        ORDER BY sleep_date DESC LIMIT ${limit}
+      `);
+      
+      const sleepRecords = result.rows.map((row: any) => ({
+        id: row.id,
+        userId: parseInt(row.user_id),
+        sleepDate: row.sleep_date,
+        bedtime: row.bedtime,
+        wakeTime: row.wake_time,
+        totalHours: row.hours_slept,
+        sleepQuality: row.sleep_quality,
+        notes: row.notes
+      }));
+      
+      console.log(`Found ${sleepRecords.length} sleep records for user ${userId}`);
+      return sleepRecords;
+    } catch (error) {
+      console.error('Error getting user sleep records:', error);
+      return [];
+    }
+  }
+
+  async getUserSleepForDate(userId: number, date: string): Promise<any[]> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM sleep_records WHERE user_id = ${userId.toString()} AND sleep_date = ${date}
+      `);
+      
+      return result.rows.map((row: any) => ({
+        id: row.id,
+        userId: parseInt(row.user_id),
+        sleepDate: row.sleep_date,
+        bedtime: row.bedtime,
+        wakeTime: row.wake_time,
+        totalHours: row.hours_slept,
+        sleepQuality: row.sleep_quality,
+        notes: row.notes
+      }));
+    } catch (error) {
+      console.error('Error getting user sleep for date:', error);
+      return [];
+    }
+  }
   async createWeightRecord(): Promise<any> { throw new Error('Not implemented'); }
   async getUserWeightRecords(): Promise<any[]> { return []; }
   async createWaterIntake(): Promise<any> { throw new Error('Not implemented'); }

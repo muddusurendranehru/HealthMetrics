@@ -288,6 +288,52 @@
         </div>
     </div>
 
+    <!-- SLEEP TRACKING SECTION -->
+    <div style="max-width: 1200px; margin: 30px auto;">
+        <div class="box">
+            <h2>😴 Sleep Tracking</h2>
+            <form id="sleepForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="sleep_date">Sleep Date</label>
+                        <input type="date" id="sleep_date" name="sleep_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sleep_quality">Sleep Quality</label>
+                        <select id="sleep_quality" name="sleep_quality" required>
+                            <option value="">Select Quality</option>
+                            <option value="1">1 - Very Poor</option>
+                            <option value="2">2 - Poor</option>
+                            <option value="3">3 - Fair</option>
+                            <option value="4">4 - Good</option>
+                            <option value="5">5 - Excellent</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bedtime">Bedtime</label>
+                        <input type="time" id="bedtime" name="bedtime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="wake_time">Wake Time</label>
+                        <input type="time" id="wake_time" name="wake_time" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Notes (Optional)</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="How did you sleep? Any notes about your sleep..."></textarea>
+                </div>
+                <button type="submit">Save Sleep Record</button>
+            </form>
+            <div id="sleepMessage"></div>
+        </div>
+
+        <!-- Sleep Records Display -->
+        <div class="box" style="margin-top: 20px;">
+            <h2>📊 Recent Sleep Records</h2>
+            <div id="sleepRecords">Loading sleep records...</div>
+        </div>
+    </div>
+
     <script>
         // Check if user is logged in and get user data
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -301,9 +347,10 @@
         document.getElementById('userEmail').textContent = user.email || '';
         document.getElementById('userId').textContent = user.id || '';
 
-        // Load meals and exercises when page loads
+        // Load meals, exercises, and sleep records when page loads
         loadMeals();
         loadExercises();
+        initializeSleepForm();
         
         // Set default dates to today
         document.getElementById('mealDate').value = new Date().toISOString().split('T')[0];
@@ -469,6 +516,116 @@
                 console.error('Error loading exercises:', error);
                 document.getElementById('exercisesList').innerHTML = '<div class="message error">Failed to load exercises.</div>';
             }
+        }
+
+        // Function to calculate hours between bedtime and wake time
+        function calculateSleepHours(bedtime, wakeTime, sleepDate) {
+            const bedtimeDateTime = new Date(`${sleepDate} ${bedtime}:00`);
+            let wakeDateTime = new Date(`${sleepDate} ${wakeTime}:00`);
+            
+            // If wake time is earlier than bedtime, assume it's the next day
+            if (wakeDateTime <= bedtimeDateTime) {
+                wakeDateTime.setDate(wakeDateTime.getDate() + 1);
+            }
+            
+            const diffMs = wakeDateTime - bedtimeDateTime;
+            const diffHours = diffMs / (1000 * 60 * 60);
+            return Math.round(diffHours * 2) / 2; // Round to nearest 0.5 hour
+        }
+
+        // Handle sleep form submission
+        document.getElementById('sleepForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const sleepDate = formData.get('sleep_date');
+            const bedtime = formData.get('bedtime');
+            const wakeTime = formData.get('wake_time');
+            
+            // Calculate total hours
+            const totalHours = calculateSleepHours(bedtime, wakeTime, sleepDate);
+            
+            // Send exact field names for database
+            const sleepData = {
+                user_id: parseInt(user.id), // Must be INTEGER
+                sleep_date: sleepDate,
+                bedtime: `${sleepDate} ${bedtime}:00`, // TIMESTAMP format
+                wake_time: `${sleepDate} ${wakeTime}:00`, // TIMESTAMP format
+                total_hours: totalHours, // NUMERIC
+                sleep_quality: parseInt(formData.get('sleep_quality')), // INTEGER 1-5
+                notes: formData.get('notes') || null // TEXT
+            };
+
+            console.log('Sending sleep data:', sleepData);
+
+            try {
+                const response = await fetch('/api/sleep', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(sleepData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('sleepMessage').innerHTML = '<div class="message success">Sleep record saved successfully!</div>';
+                    e.target.reset();
+                    // Reset date to today
+                    document.getElementById('sleep_date').value = new Date().toISOString().split('T')[0];
+                    loadSleepRecords(); // Refresh sleep records
+                } else {
+                    document.getElementById('sleepMessage').innerHTML = `<div class="message error">${result.message}</div>`;
+                }
+            } catch (error) {
+                console.error('Error saving sleep record:', error);
+                document.getElementById('sleepMessage').innerHTML = '<div class="message error">Failed to save sleep record. Please try again.</div>';
+            }
+        });
+
+        // Function to load sleep records
+        async function loadSleepRecords() {
+            try {
+                console.log('Loading sleep records for user_id:', user.id);
+                
+                const response = await fetch(`/api/sleep/${user.id}`);
+                const sleepRecords = await response.json();
+                
+                console.log('Loaded sleep records:', sleepRecords);
+                
+                const recordsContainer = document.getElementById('sleepRecords');
+                
+                if (sleepRecords.length === 0) {
+                    recordsContainer.innerHTML = '<p>No sleep records yet. Add your first sleep record!</p>';
+                    return;
+                }
+                
+                recordsContainer.innerHTML = sleepRecords.map(record => `
+                    <div class="exercise-item">
+                        <h4>Sleep - ${record.sleepDate}</h4>
+                        <div class="exercise-details">
+                            <strong>Quality:</strong> ${record.sleepQuality}/5 | 
+                            <strong>Total Hours:</strong> ${record.totalHours || 0}h<br>
+                            <strong>Bedtime:</strong> ${record.bedtime ? new Date(record.bedtime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Not set'} | 
+                            <strong>Wake Time:</strong> ${record.wakeTime ? new Date(record.wakeTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Not set'}<br>
+                            ${record.notes ? `<strong>Notes:</strong> ${record.notes}<br>` : ''}
+                            <strong>User ID:</strong> ${record.userId}
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading sleep records:', error);
+                document.getElementById('sleepRecords').innerHTML = '<div class="message error">Failed to load sleep records.</div>';
+            }
+        }
+
+        // Initialize sleep form
+        function initializeSleepForm() {
+            // Set today's date as default
+            document.getElementById('sleep_date').value = new Date().toISOString().split('T')[0];
+            loadSleepRecords(); // Load existing records
         }
 
         // Logout function

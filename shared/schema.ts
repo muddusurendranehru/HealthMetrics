@@ -44,9 +44,13 @@ export const sleepRecords = pgTable("sleep_records", {
   sleepDate: date("sleep_date").notNull(),
   bedtime: timestamp("bedtime"),
   wakeTime: timestamp("wake_time"),
-  hoursSlept: decimal("hours_slept", { precision: 4, scale: 2 }),
+  totalHours: decimal("total_hours", { precision: 4, scale: 2 }),
   sleepQuality: integer("sleep_quality"), // 1-5 scale
+  deepSleepHours: decimal("deep_sleep_hours", { precision: 4, scale: 2 }),
+  remSleepHours: decimal("rem_sleep_hours", { precision: 4, scale: 2 }),
+  awakeCount: integer("awake_count"),
   notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Weight tracking table

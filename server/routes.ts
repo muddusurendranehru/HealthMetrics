@@ -342,37 +342,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Sleep routes
   app.post("/api/sleep", async (req, res) => {
     try {
-      const sleepData = insertSleepRecordSchema.parse(req.body);
+      console.log('Received sleep data:', req.body);
+      
+      // Prepare data for storage with correct field names
+      const sleepData = {
+        userId: parseInt(req.body.user_id), // INTEGER
+        sleepDate: req.body.sleep_date, // DATE 'YYYY-MM-DD'
+        bedtime: req.body.bedtime, // TIMESTAMP
+        wakeTime: req.body.wake_time, // TIMESTAMP
+        totalHours: req.body.total_hours ? parseFloat(req.body.total_hours) : null, // NUMERIC
+        sleepQuality: req.body.sleep_quality ? parseInt(req.body.sleep_quality) : null, // INTEGER 1-5
+        notes: req.body.notes // TEXT
+      };
+      
+      console.log('Processed sleep data for storage:', sleepData);
+      
+      // Save to database using storage interface
       const sleepRecord = await storage.createSleepRecord(sleepData);
+      console.log('Created/updated sleep record:', sleepRecord);
+      
       res.status(201).json(sleepRecord);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Validation error", 
-          errors: error.errors 
-        });
-      }
       console.error("Create sleep record error:", error);
       res.status(500).json({ 
-        message: "Internal server error" 
+        message: "Internal server error",
+        error: error.message 
       });
     }
   });
 
-  app.get("/api/sleep", async (req, res) => {
+  app.get("/api/sleep/:userId", async (req, res) => {
     try {
-      const userId = req.query.userId as string;
-      if (!userId) {
-        return res.status(400).json({ message: "userId is required" });
+      const userId = parseInt(req.params.userId); // Convert to INTEGER
+      if (!userId || isNaN(userId)) {
+        return res.status(400).json({ message: "Valid integer userId is required" });
       }
       
-      const today = new Date().toISOString().split('T')[0];
-      const sleepRecords = await storage.getUserSleepForDate(userId, today);
+      console.log('Fetching sleep records for user_id:', userId);
+      
+      // Get sleep records from database using storage interface
+      const sleepRecords = await storage.getUserSleepRecords(userId);
+      console.log(`Found ${sleepRecords.length} sleep records for user ${userId}`);
+      
       res.json(sleepRecords);
     } catch (error) {
       console.error("Get sleep records error:", error);
       res.status(500).json({ 
-        message: "Internal server error" 
+        message: "Internal server error",
+        error: error.message 
       });
     }
   });
