@@ -1,0 +1,222 @@
+import { Router } from 'express';
+import { neon } from '@neondatabase/serverless';
+import bcrypt from 'bcryptjs';
+
+const router = Router();
+
+// Neon Database Connection
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_Bl9kug4wxKzN@ep-weathered-paper-a1mbh5zv-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
+const sql = neon(DATABASE_URL);
+
+// ========================================
+// AUTH ROUTES
+// ========================================
+
+// Register/Signup
+router.post('/api/register', async (req, res) => {
+    try {
+        const { username, email, password, full_name } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password required' });
+        }
+        
+        // Check if user exists
+        const existing = await sql`
+            SELECT * FROM users WHERE email = ${email}
+        `;
+        
+        if (existing.length > 0) {
+            return res.status(400).json({ error: 'Email already registered' });
+        }
+        
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Insert user
+        const result = await sql`
+            INSERT INTO users (username, email, password_hash, full_name)
+            VALUES (
+                ${username || email.split('@')[0]}, 
+                ${email}, 
+                ${hashedPassword},
+                ${full_name || username || email.split('@')[0]}
+            )
+            RETURNING id, username, email, full_name, created_at
+        `;
+        
+        console.log('✅ New user registered:', email);
+        res.json({ success: true, user: result[0] });
+    } catch (error) {
+        console.error('❌ Register error:', error);
+        res.status(500).json({ error: 'Registration failed' });
+    }
+});
+
+// Login
+router.post('/api/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password required' });
+        }
+        
+        // Find user
+        const users = await sql`
+            SELECT * FROM users WHERE email = ${email}
+        `;
+        
+        if (users.length === 0) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+        
+        const user = users[0];
+        
+        // Check password
+        const validPassword = await bcrypt.compare(password, user.password_hash);
+        
+        if (!validPassword) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+        
+        console.log('✅ User logged in:', email);
+        res.json({ 
+            success: true, 
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                full_name: user.full_name
+            }
+        });
+    } catch (error) {
+        console.error('❌ Login error:', error);
+        res.status(500).json({ error: 'Login failed' });
+    }
+});
+
+// ========================================
+// FOOD SEARCH (142+ Foods)
+// ========================================
+
+router.get('/api/foods/search', async (req, res) => {
+    try {
+        const { q } = req.query;
+        
+        if (!q || typeof q !== 'string' || q.length < 2) {
+            return res.json({ foods: [] });
+        }
+        
+        const foods = await sql`
+            SELECT * FROM food_nutrition 
+            WHERE food_name ILIKE ${`%${q}%`}
+            ORDER BY food_name
+            LIMIT 20
+        `;
+        
+        console.log(`✅ Search "${q}": ${foods.length} results`);
+        res.json({ foods: foods });
+    } catch (error) {
+        console.error('❌ Search error:', error);
+        res.status(500).json({ error: 'Search failed' });
+    }
+});
+
+// ========================================
+// MEALS - INSERT & FETCH
+// ========================================
+
+// Add meal (INSERT)
+router.post('/api/meals/add', async (req, res) => {
+    try {
+        const { user_id, food_name, calories, protein_g, carbs_g, fats_g } = req.body;
+        
+        if (!user_id || !food_name) {
+            return res.status(400).json({ error: 'User ID and food name required' });
+        }
+        
+        const result = await sql`
+            INSERT INTO meal_logs (
+                user_id, 
+                food_name, 
+                calories, 
+                protein_g, 
+                carbs_g, 
+                fats_g,
+                meal_date
+            )
+            VALUES (
+                ${user_id},
+                ${food_name},
+                ${calories || 0},
+                ${protein_g || 0},
+                ${carbs_g || 0},
+                ${fats_g || 0},
+                CURRENT_DATE
+            )
+            RETURNING *
+        `;
+        
+        console.log(`✅ Meal added for user ${user_id}:`, food_name);
+        res.json({ success: true, meal: result[0] });
+    } catch (error) {
+        console.error('❌ Add meal error:', error);
+        res.status(500).json({ error: 'Failed to add meal' });
+    }
+});
+
+// Get user's meals (FETCH)
+router.get('/api/meals/today', async (req, res) => {
+    try {
+        const { user_id } = req.query;
+        
+        if (!user_id) {
+            return res.status(400).json({ error: 'User ID required' });
+        }
+        
+        const userId = typeof user_id === 'string' ? parseInt(user_id) : user_id;
+        
+        const meals = await sql`
+            SELECT * FROM meal_logs 
+            WHERE user_id = ${userId}
+            AND meal_date = CURRENT_DATE
+            ORDER BY created_at DESC
+        `;
+        
+        console.log(`✅ Fetched ${meals.length} meals for user ${userId}`);
+        res.json({ meals: meals });
+    } catch (error) {
+        console.error('❌ Fetch meals error:', error);
+        res.status(500).json({ error: 'Failed to fetch meals' });
+    }
+});
+
+// Delete meal
+router.delete('/api/meals/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        await sql`
+            DELETE FROM meal_logs WHERE id = ${parseInt(id)}
+        `;
+        
+        console.log(`✅ Meal deleted: ${id}`);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ Delete meal error:', error);
+        res.status(500).json({ error: 'Failed to delete meal' });
+    }
+});
+
+// Health check
+router.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        message: 'NutriBot API running!',
+        database: 'Neon PostgreSQL',
+        foods: '142+ available'
+    });
+});
+
+export default router;
