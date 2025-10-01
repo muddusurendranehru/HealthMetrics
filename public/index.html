@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriBot - Sign Up & Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header p { font-size: 1.1em; opacity: 0.95; }
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab:hover { background: #f0f0f0; }
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+        .content { padding: 40px 30px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102,126,234,0.4);
+        }
+        .btn:active { transform: translateY(0); }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            font-weight: 500;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        .food-count {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 15px;
+        }
+        .food-count strong {
+            font-size: 22px;
+            display: block;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🥗 NutriBot</h1>
+            <p>Track your nutrition journey</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('signup')" id="signupTab">Sign Up</button>
+            <button class="tab" onclick="switchTab('login')" id="loginTab">Login</button>
+        </div>
+
+        <div class="content">
+            <!-- Signup Tab -->
+            <div class="tab-content active" id="signupContent">
+                <h2 style="color: #333; margin-bottom: 20px;">Create Account</h2>
+                <div id="signupMessage" class="message"></div>
+                
+                <form onsubmit="return handleSignup(event)">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="signupName" required placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="signupEmail" required placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password (min 6 characters)</label>
+                        <input type="password" id="signupPassword" required minlength="6" placeholder="Create password">
+                    </div>
+                    <button type="submit" class="btn" id="signupBtn">Create Account</button>
+                </form>
+                
+                <div class="food-count">
+                    🎉 Get access to <strong>142+ Foods Database!</strong>
+                </div>
+            </div>
+
+            <!-- Login Tab -->
+            <div class="tab-content" id="loginContent">
+                <h2 style="color: #333; margin-bottom: 20px;">Welcome Back!</h2>
+                <div id="loginMessage" class="message"></div>
+                
+                <form onsubmit="return handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="loginEmail" required placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="btn" id="loginBtn">Login</button>
+                </form>
+                
+                <div class="food-count">
+                    🔍 Search & track from <strong>142+ Foods!</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Switch between tabs
+        function switchTab(tab) {
+            document.getElementById('signupTab').classList.toggle('active', tab === 'signup');
+            document.getElementById('loginTab').classList.toggle('active', tab === 'login');
+            document.getElementById('signupContent').classList.toggle('active', tab === 'signup');
+            document.getElementById('loginContent').classList.toggle('active', tab === 'login');
+            
+            // Clear messages
+            document.getElementById('signupMessage').className = 'message';
+            document.getElementById('loginMessage').className = 'message';
+        }
+
+        // Handle signup
+        async function handleSignup(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('signupBtn');
+            const msg = document.getElementById('signupMessage');
+            
+            btn.disabled = true;
+            btn.textContent = 'Creating Account...';
+            
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        username: name.toLowerCase().replace(/\s+/g, ''),
+                        email: email,
+                        password: password,
+                        full_name: name
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    msg.textContent = '✅ Account created successfully! Please login.';
+                    msg.className = 'message success';
+                    
+                    // Clear form
+                    document.getElementById('signupName').value = '';
+                    document.getElementById('signupEmail').value = '';
+                    document.getElementById('signupPassword').value = '';
+                    
+                    // Switch to login after 2 seconds
+                    setTimeout(() => {
+                        switchTab('login');
+                        document.getElementById('loginEmail').value = email;
+                    }, 2000);
+                } else {
+                    msg.textContent = '❌ ' + (data.error || 'Signup failed');
+                    msg.className = 'message error';
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                msg.textContent = '❌ Network error. Please try again.';
+                msg.className = 'message error';
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Create Account';
+            return false;
+        }
+
+        // Handle login
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('loginBtn');
+            const msg = document.getElementById('loginMessage');
+            
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.user) {
+                    // Save user to localStorage
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    msg.textContent = '✅ Login successful! Redirecting to dashboard...';
+                    msg.className = 'message success';
+                    
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 1500);
+                } else {
+                    msg.textContent = '❌ ' + (data.error || 'Login failed');
+                    msg.className = 'message error';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                msg.textContent = '❌ Network error. Please try again.';
+                msg.className = 'message error';
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Login';
+            return false;
+        }
+    </script>
+</body>
+</html>

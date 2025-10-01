@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
@@ -19,9 +19,12 @@ const signupSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve static files from public directory
+  app.use(express.static(path.join(process.cwd(), "public")));
+  
   // Serve static HTML files
   app.get("/", (req, res) => {
-    res.sendFile(path.join(process.cwd(), "index.html"));
+    res.sendFile(path.join(process.cwd(), "public", "index.html"));
   });
 
   app.get("/dashboard.html", (req, res) => {
