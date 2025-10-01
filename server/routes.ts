@@ -28,7 +28,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/dashboard.html", (req, res) => {
-    res.sendFile(path.join(process.cwd(), "dashboard.html"));
+    res.sendFile(path.join(process.cwd(), "public", "dashboard.html"));
   });
 
   // Test endpoint

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriBot - Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            color: #667eea;
+            font-size: 2em;
+        }
+        .header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .logout-btn {
+            padding: 10px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .logout-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .search-box:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+        }
+        .food-results {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .food-item {
+            border: 2px solid #e0e0e0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.3s;
+        }
+        .food-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+        }
+        .food-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .food-stats {
+            display: flex;
+            gap: 15px;
+            color: #666;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+        .selected-food {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+        .selected-food h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .nutrition-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .nutrition-value {
+            font-size: 28px;
+            font-weight: bold;
+            display: block;
+            margin-top: 5px;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            display: block;
+            margin-top: 5px;
+        }
+        .meal-item {
+            border: 2px solid #e0e0e0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .meal-info {
+            flex: 1;
+        }
+        .meal-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .meal-stats {
+            color: #666;
+            font-size: 14px;
+        }
+        .delete-btn {
+            padding: 8px 15px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .delete-btn:hover {
+            background: #c82333;
+        }
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🥗 NutriBot Dashboard</h1>
+            <div class="user-info">
+                <span id="userName" style="font-weight: 600; color: #333;"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- Today's Stats -->
+        <div id="statsCard" class="stats-card" style="display: none;">
+            <h2 style="margin-bottom: 15px;">📊 Today's Nutrition</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div>🔥 Calories</div>
+                    <span class="stat-value" id="totalCalories">0</span>
+                </div>
+                <div class="stat-box">
+                    <div>💪 Protein</div>
+                    <span class="stat-value" id="totalProtein">0</span>g
+                </div>
+                <div class="stat-box">
+                    <div>🍞 Carbs</div>
+                    <span class="stat-value" id="totalCarbs">0</span>g
+                </div>
+                <div class="stat-box">
+                    <div>🥑 Fats</div>
+                    <span class="stat-value" id="totalFats">0</span>g
+                </div>
+            </div>
+        </div>
+
+        <!-- Food Search -->
+        <div class="card">
+            <h2>🔍 Search Foods</h2>
+            <input 
+                type="text" 
+                id="foodSearch" 
+                class="search-box"
+                placeholder="Search from 142+ foods: rice, idli, chicken, apple..."
+                oninput="searchFoods()"
+            >
+            <div id="foodResults" class="food-results"></div>
+        </div>
+
+        <!-- Selected Food -->
+        <div id="selectedFood" class="selected-food">
+            <h3 id="selectedName"></h3>
+            <div class="nutrition-grid">
+                <div class="nutrition-item">
+                    <div>🔥 Calories</div>
+                    <span class="nutrition-value" id="selectedCal">0</span>
+                </div>
+                <div class="nutrition-item">
+                    <div>💪 Protein</div>
+                    <span class="nutrition-value" id="selectedPro">0</span>g
+                </div>
+                <div class="nutrition-item">
+                    <div>🍞 Carbs</div>
+                    <span class="nutrition-value" id="selectedCarb">0</span>g
+                </div>
+                <div class="nutrition-item">
+                    <div>🥑 Fats</div>
+                    <span class="nutrition-value" id="selectedFat">0</span>g
+                </div>
+            </div>
+            <button class="btn" onclick="addMeal()">➕ Add to Today's Meals</button>
+        </div>
+
+        <!-- Today's Meals -->
+        <div class="card">
+            <h2>📋 Today's Meals</h2>
+            <div id="mealsList"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFoodData = null;
+        let currentUser = null;
+
+        // Check if user is logged in
+        function checkAuth() {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.href = '/';
+                return null;
+            }
+            currentUser = JSON.parse(userStr);
+            document.getElementById('userName').textContent = currentUser.full_name || currentUser.email;
+            return currentUser;
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        // Search foods
+        async function searchFoods() {
+            const query = document.getElementById('foodSearch').value.trim();
+            const results = document.getElementById('foodResults');
+            
+            if (query.length < 2) {
+                results.innerHTML = '<div class="empty-state">Type at least 2 characters to search...</div>';
+                return;
+            }
+            
+            results.innerHTML = '<div class="empty-state">🔍 Searching 142+ foods...</div>';
+            
+            try {
+                const response = await fetch(`/api/foods/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.foods && data.foods.length > 0) {
+                    results.innerHTML = data.foods.map(food => `
+                        <div class="food-item" onclick='selectFood(${JSON.stringify(food).replace(/'/g, "&#39;")})'>
+                            <div class="food-name">${food.food_name}</div>
+                            <div class="food-stats">
+                                <span>🔥 ${food.calories} cal</span>
+                                <span>💪 ${food.protein_g}g</span>
+                                <span>🍞 ${food.carbs_g}g</span>
+                                <span>🥑 ${food.fats_g}g</span>
+                                ${food.serving_size ? `<span style="color: #999;">• ${food.serving_size}</span>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    results.innerHTML = '<div class="empty-state">😕 No foods found. Try: rice, idli, chicken, apple</div>';
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                results.innerHTML = '<div class="empty-state" style="color: #dc3545;">❌ Search failed. Please try again.</div>';
+            }
+        }
+
+        // Select food
+        function selectFood(food) {
+            selectedFoodData = food;
+            
+            document.getElementById('selectedFood').style.display = 'block';
+            document.getElementById('selectedName').textContent = food.food_name;
+            document.getElementById('selectedCal').textContent = food.calories;
+            document.getElementById('selectedPro').textContent = food.protein_g;
+            document.getElementById('selectedCarb').textContent = food.carbs_g;
+            document.getElementById('selectedFat').textContent = food.fats_g;
+            
+            document.getElementById('foodSearch').value = '';
+            document.getElementById('foodResults').innerHTML = '';
+            document.getElementById('selectedFood').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Add meal
+        async function addMeal() {
+            if (!selectedFoodData || !currentUser) return;
+            
+            try {
+                const response = await fetch('/api/meals/add', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        food_name: selectedFoodData.food_name,
+                        calories: selectedFoodData.calories,
+                        protein_g: selectedFoodData.protein_g,
+                        carbs_g: selectedFoodData.carbs_g,
+                        fats_g: selectedFoodData.fats_g
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('selectedFood').style.display = 'none';
+                    selectedFoodData = null;
+                    loadTodaysMeals();
+                    
+                    // Show success briefly
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = '✅ Added!';
+                    btn.style.background = '#28a745';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = 'white';
+                    }, 2000);
+                } else {
+                    alert('❌ Failed to add meal: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Add meal error:', error);
+                alert('❌ Network error. Please try again.');
+            }
+        }
+
+        // Load today's meals
+        async function loadTodaysMeals() {
+            if (!currentUser) return;
+            
+            try {
+                const response = await fetch(`/api/meals/today?user_id=${currentUser.id}`);
+                const data = await response.json();
+                
+                const mealsList = document.getElementById('mealsList');
+                const statsCard = document.getElementById('statsCard');
+                
+                if (data.meals && data.meals.length > 0) {
+                    // Calculate totals
+                    let totals = { calories: 0, protein: 0, carbs: 0, fats: 0 };
+                    
+                    data.meals.forEach(m => {
+                        totals.calories += m.calories || 0;
+                        totals.protein += parseFloat(m.protein_g) || 0;
+                        totals.carbs += parseFloat(m.carbs_g) || 0;
+                        totals.fats += parseFloat(m.fats_g) || 0;
+                    });
+                    
+                    // Show stats
+                    statsCard.style.display = 'block';
+                    document.getElementById('totalCalories').textContent = Math.round(totals.calories);
+                    document.getElementById('totalProtein').textContent = totals.protein.toFixed(1);
+                    document.getElementById('totalCarbs').textContent = totals.carbs.toFixed(1);
+                    document.getElementById('totalFats').textContent = totals.fats.toFixed(1);
+                    
+                    // Show meals
+                    mealsList.innerHTML = data.meals.map(m => `
+                        <div class="meal-item">
+                            <div class="meal-info">
+                                <div class="meal-name">${m.food_name}</div>
+                                <div class="meal-stats">
+                                    🔥 ${m.calories} cal • 💪 ${m.protein_g}g • 🍞 ${m.carbs_g}g • 🥑 ${m.fats_g}g
+                                </div>
+                                <div style="color: #999; font-size: 12px; margin-top: 3px;">
+                                    ${new Date(m.created_at).toLocaleTimeString()}
+                                </div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteMeal(${m.id})">🗑️</button>
+                        </div>
+                    `).join('');
+                } else {
+                    statsCard.style.display = 'none';
+                    mealsList.innerHTML = '<div class="empty-state">No meals yet today.<br>Search and add your first meal! 🍽️</div>';
+                }
+            } catch (error) {
+                console.error('Load meals error:', error);
+            }
+        }
+
+        // Delete meal
+        async function deleteMeal(id) {
+            if (!confirm('Delete this meal?')) return;
+            
+            try {
+                const response = await fetch(`/api/meals/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadTodaysMeals();
+                } else {
+                    alert('❌ Failed to delete meal');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('❌ Network error');
+            }
+        }
+
+        // Initialize
+        checkAuth();
+        loadTodaysMeals();
+    </script>
+</body>
+</html>
