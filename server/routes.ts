@@ -264,6 +264,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========================================
+  // STANDARDIZED MEAL ENDPOINTS (must come before /api/meals/:userId)
+  // ========================================
+
+  // Get today's meals (standardized)
+  app.get('/api/meals/today', async (req, res) => {
+    try {
+      const { user_id } = req.query;
+      
+      if (!user_id) {
+        return res.status(400).json({ error: 'User ID required' });
+      }
+      
+      const result = await db.execute(sql`
+        SELECT * FROM meal_logs 
+        WHERE user_id = ${user_id}
+        AND meal_date = CURRENT_DATE
+        ORDER BY created_at DESC
+      `);
+      
+      console.log(`✅ Fetched ${result.rows.length} meals for user ${user_id}`);
+      res.json({ meals: result.rows });
+    } catch (error) {
+      console.error('❌ Fetch meals error:', error);
+      res.status(500).json({ error: 'Failed to fetch meals' });
+    }
+  });
+
+  // Add meal endpoint (standardized)
+  app.post('/api/meals/add', async (req, res) => {
+    try {
+      const { user_id, food_name, calories, protein_g, carbs_g, fats_g } = req.body;
+      
+      if (!user_id || !food_name) {
+        return res.status(400).json({ error: 'User ID and food name required' });
+      }
+      
+      const result = await db.execute(sql`
+        INSERT INTO meal_logs (
+          user_id, 
+          food_name, 
+          calories, 
+          protein_g, 
+          carbs_g, 
+          fats_g,
+          meal_date
+        )
+        VALUES (
+          ${user_id},
+          ${food_name},
+          ${calories || 0},
+          ${protein_g || 0},
+          ${carbs_g || 0},
+          ${fats_g || 0},
+          CURRENT_DATE
+        )
+        RETURNING *
+      `);
+      
+      console.log(`✅ Meal added for user ${user_id}:`, food_name);
+      res.json({ success: true, meal: result.rows[0] });
+    } catch (error) {
+      console.error('❌ Add meal error:', error);
+      res.status(500).json({ error: 'Failed to add meal' });
+    }
+  });
+
   app.get("/api/meals/:userId", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId); // Convert to INTEGER
@@ -497,6 +564,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         message: "Internal server error" 
       });
+    }
+  });
+
+  // ========================================
+  // FOOD SEARCH ENDPOINT
+  // ========================================
+
+  // Food search endpoint (standardized)
+  app.get('/api/foods/search', async (req, res) => {
+    try {
+      const { q } = req.query;
+      
+      if (!q || typeof q !== 'string' || q.length < 2) {
+        return res.json({ foods: [] });
+      }
+      
+      const result = await db.execute(sql`
+        SELECT * FROM food_nutrition 
+        WHERE food_name ILIKE ${`%${q}%`}
+        ORDER BY food_name
+        LIMIT 20
+      `);
+      
+      console.log(`✅ Search "${q}": ${result.rows.length} results`);
+      res.json({ foods: result.rows });
+    } catch (error) {
+      console.error('❌ Search error:', error);
+      res.status(500).json({ error: 'Search failed' });
     }
   });
 
