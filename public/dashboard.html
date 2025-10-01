@@ -304,14 +304,15 @@
         // Check if user is logged in (using session)
         async function checkAuth() {
             try {
-                const response = await fetch('/api/user/me', {
+                const response = await fetch('/api/me', {
                     credentials: 'include'
                 });
                 if (!response.ok) {
                     window.location.href = '/';
                     return null;
                 }
-                currentUser = await response.json();
+                const data = await response.json();
+                currentUser = data.user;
                 document.getElementById('userName').textContent = currentUser.email;
                 return currentUser;
             } catch (error) {

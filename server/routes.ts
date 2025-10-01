@@ -139,8 +139,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Get current user
-  app.get("/api/user/me", requireAuth, async (req, res) => {
+  // Get current user (check if logged in)
+  app.get('/api/me', requireAuth, async (req: Request, res: Response) => {
     try {
       const users: any[] = await sql`
         SELECT id, email, first_name, last_name, created_at 
@@ -149,13 +149,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `;
       
       if (users.length === 0) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(401).json({ error: 'User not found' });
       }
       
-      return res.json(users[0]);
+      return res.json({ user: users[0] });
     } catch (error) {
-      console.error("❌ Get user error:", error);
-      return res.status(500).json({ message: "Internal server error" });
+      console.error('❌ Get user error:', error);
+      return res.status(500).json({ error: 'Failed to get user' });
     }
   });
 
