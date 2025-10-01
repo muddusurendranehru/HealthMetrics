@@ -235,20 +235,18 @@
             btn.textContent = 'Creating Account...';
             
             try {
-                const response = await fetch('/api/register', {
+                const response = await fetch('/api/signup', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        username: email.split('@')[0],
                         email: email,
-                        password: password,
-                        full_name: email.split('@')[0]
+                        password: password
                     })
                 });
                 
                 const data = await response.json();
                 
-                if (data.success) {
+                if (response.ok) {
                     msg.textContent = '✅ Account created successfully! Please login.';
                     msg.className = 'message success';
                     
@@ -263,7 +261,7 @@
                         document.getElementById('loginEmail').value = email;
                     }, 2000);
                 } else {
-                    msg.textContent = '❌ ' + (data.error || 'Signup failed');
+                    msg.textContent = '❌ ' + (data.message || 'Signup failed');
                     msg.className = 'message error';
                 }
             } catch (error) {
