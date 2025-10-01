@@ -293,26 +293,28 @@
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    credentials: 'include',
+                    credentials: 'include', // CRITICAL: Include cookies!
                     body: JSON.stringify({ email, password })
                 });
                 
                 const data = await response.json();
                 
-                if (response.ok && data.success) {
-                    msg.textContent = '✅ Login successful! Redirecting to dashboard...';
+                if (data.success && data.user) {
+                    // Save user to localStorage
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    msg.textContent = '✅ Login successful! Redirecting...';
                     msg.className = 'message success';
                     
-                    // Save user to localStorage for fast UI loading
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    console.log('✅ User saved to localStorage:', data.user);
+                    console.log('✅ Login success, user saved:', data.user);
                     
-                    // Redirect to dashboard
+                    // Wait a bit longer before redirect
                     setTimeout(() => {
+                        console.log('🔄 Redirecting to dashboard...');
                         window.location.href = '/dashboard.html';
                     }, 1500);
                 } else {
-                    msg.textContent = '❌ ' + (data.message || 'Login failed');
+                    msg.textContent = '❌ ' + (data.error || 'Login failed');
                     msg.className = 'message error';
                 }
             } catch (error) {
