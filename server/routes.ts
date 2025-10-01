@@ -5,7 +5,7 @@ import { db } from "./db";
 import { sql } from "drizzle-orm";
 import { insertUserSchema, insertMealSchema, insertExerciseSchema, insertSleepRecordSchema, insertWeightTrackingSchema, insertWaterIntakeSchema } from "@shared/schema";
 import { z } from "zod";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import path from "path";
 
 const loginSchema = z.object({
