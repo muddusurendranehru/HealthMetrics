@@ -595,6 +595,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete meal
+  app.delete('/api/meals/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      await db.execute(sql`
+        DELETE FROM meal_logs WHERE id = ${parseInt(id)}
+      `);
+      
+      console.log(`✅ Meal deleted: ${id}`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('❌ Delete meal error:', error);
+      res.status(500).json({ error: 'Failed to delete meal' });
+    }
+  });
+
+  // Health check
+  app.get('/api/health', (req, res) => {
+    res.json({ 
+      status: 'ok', 
+      message: 'NutriBot API running!',
+      database: 'Neon PostgreSQL',
+      foods: '142+ available'
+    });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
