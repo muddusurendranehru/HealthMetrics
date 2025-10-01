@@ -287,7 +287,7 @@
                     <span class="nutrition-value" id="selectedFat">0</span>g
                 </div>
             </div>
-            <button class="btn" onclick="addMeal()">➕ Add to Today's Meals</button>
+            <button class="btn" onclick="addMeal(event)">➕ Add to Today's Meals</button>
         </div>
 
         <!-- Today's Meals -->
@@ -409,7 +409,7 @@
         }
 
         // Add meal (using session)
-        async function addMeal() {
+        async function addMeal(event) {
             if (!selectedFoodData) return;
             
             try {
@@ -442,14 +442,16 @@
                     loadTodaysMeals();
                     
                     // Show success briefly
-                    const btn = event.target;
-                    const originalText = btn.textContent;
-                    btn.textContent = '✅ Added!';
-                    btn.style.background = '#28a745';
-                    setTimeout(() => {
-                        btn.textContent = originalText;
-                        btn.style.background = 'white';
-                    }, 2000);
+                    if (event && event.target) {
+                        const btn = event.target;
+                        const originalText = btn.textContent;
+                        btn.textContent = '✅ Added!';
+                        btn.style.background = '#28a745';
+                        setTimeout(() => {
+                            btn.textContent = originalText;
+                            btn.style.background = 'white';
+                        }, 2000);
+                    }
                 } else {
                     alert('❌ Failed to add meal: ' + (data.error || 'Unknown error'));
                 }
