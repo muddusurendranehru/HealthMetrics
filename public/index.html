@@ -303,7 +303,11 @@
                     msg.textContent = '✅ Login successful! Redirecting to dashboard...';
                     msg.className = 'message success';
                     
-                    // Redirect to dashboard (session is stored on server)
+                    // Save user to localStorage for fast UI loading
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    console.log('✅ User saved to localStorage:', data.user);
+                    
+                    // Redirect to dashboard
                     setTimeout(() => {
                         window.location.href = '/dashboard.html';
                     }, 1500);

@@ -301,28 +301,40 @@
         let selectedFoodData = null;
         let currentUser = null;
 
-        // Check if user is logged in (using session)
         async function checkAuth() {
-            try {
-                const response = await fetch('/api/me', {
-                    credentials: 'include'
-                });
-                if (!response.ok) {
-                    window.location.href = '/';
-                    return null;
-                }
-                const data = await response.json();
-                currentUser = data.user;
-                document.getElementById('userName').textContent = currentUser.email;
-                return currentUser;
-            } catch (error) {
-                console.error('Auth check error:', error);
+            // First check localStorage
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                console.log('❌ No user in localStorage, redirecting...');
                 window.location.href = '/';
                 return null;
             }
+            
+            currentUser = JSON.parse(userStr);
+            console.log('✅ User from localStorage:', currentUser);
+            document.getElementById('userName').textContent = currentUser.full_name || currentUser.email;
+            
+            // Verify with server in background (don't block UI)
+            fetch('/api/me', {
+                credentials: 'include'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        console.warn('⚠️ Session expired, will redirect on next action');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Server confirms user:', data.user);
+                })
+                .catch(error => {
+                    console.warn('⚠️ Could not verify session:', error);
+                });
+            
+            return currentUser;
         }
 
-        // Logout (using session)
+        // Logout (clear localStorage and session)
         async function logout() {
             try {
                 await fetch('/api/logout', { 
@@ -332,6 +344,11 @@
             } catch (error) {
                 console.error('Logout error:', error);
             }
+            
+            // Clear localStorage
+            localStorage.removeItem('user');
+            console.log('✅ Cleared localStorage');
+            
             window.location.href = '/';
         }
 
