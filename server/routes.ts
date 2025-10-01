@@ -104,14 +104,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.session.userId = user.id;
       req.session.userEmail = user.email;
       
-      console.log("✅ User logged in:", email, "User ID:", user.id);
-      
-      return res.json({ 
-        success: true, 
-        user: {
-          id: user.id,
-          email: user.email
+      // IMPORTANT: Save session before responding to ensure cookie is set
+      req.session.save((err) => {
+        if (err) {
+          console.error("❌ Session save error:", err);
+          return res.status(500).json({ message: "Session error" });
         }
+        
+        console.log("✅ User logged in:", email, "User ID:", user.id);
+        
+        return res.json({ 
+          success: true, 
+          user: {
+            id: user.id,
+            email: user.email
+          }
+        });
       });
     } catch (error) {
       console.error("❌ Login error:", error);
