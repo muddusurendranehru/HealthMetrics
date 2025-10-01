@@ -21,9 +21,15 @@ Preferred communication style: Simple, everyday language.
 - **Runtime**: Node.js with Express.js framework
 - **Language**: TypeScript with ES modules
 - **Database ORM**: Drizzle ORM for type-safe database operations
-- **Authentication**: bcrypt for password hashing, session-based auth
+- **Authentication**: Express sessions with PostgreSQL store (connect-pg-simple)
+  - Secure session-based authentication (no localStorage)
+  - User ID stored server-side in session
+  - HTTP-only cookies for security
+  - 30-day session expiration
+- **Password Security**: bcryptjs for password hashing (10 salt rounds)
 - **API Design**: RESTful endpoints with JSON responses
 - **Error Handling**: Centralized error middleware
+- **Route Protection**: requireAuth middleware for protected endpoints
 
 ## Database Schema
 The PostgreSQL database includes the following core entities:
@@ -41,10 +47,15 @@ The PostgreSQL database includes the following core entities:
 - **Path Aliases**: Configured for clean imports (@/, @shared/)
 
 ## Security Considerations
-- Password hashing with bcrypt (10 salt rounds)
-- Input validation using Zod schemas
-- CORS and security headers through Express middleware
-- Environment variable management for sensitive data
+- **Session-Based Authentication**: User sessions stored in PostgreSQL with HTTP-only cookies
+  - No sensitive data (user_id) sent from client
+  - Session automatically validated on all protected endpoints
+  - Server-side session storage prevents tampering
+- **Password Security**: bcryptjs hashing with 10 salt rounds
+- **Input Validation**: Zod schemas for all API endpoints
+- **Environment Variables**: Sensitive data (DATABASE_URL, SESSION_SECRET) managed via environment
+- **Route Protection**: requireAuth middleware ensures only authenticated users access protected routes
+- **Ownership Verification**: Delete operations verify resource ownership via session user_id
 
 ## Build and Deployment
 - **Frontend**: Vite builds to static assets in dist/public

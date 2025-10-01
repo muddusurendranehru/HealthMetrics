@@ -301,21 +301,31 @@
         let selectedFoodData = null;
         let currentUser = null;
 
-        // Check if user is logged in
-        function checkAuth() {
-            const userStr = localStorage.getItem('user');
-            if (!userStr) {
+        // Check if user is logged in (using session)
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user/me');
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return null;
+                }
+                currentUser = await response.json();
+                document.getElementById('userName').textContent = currentUser.email;
+                return currentUser;
+            } catch (error) {
+                console.error('Auth check error:', error);
                 window.location.href = '/';
                 return null;
             }
-            currentUser = JSON.parse(userStr);
-            document.getElementById('userName').textContent = currentUser.full_name || currentUser.email;
-            return currentUser;
         }
 
-        // Logout
-        function logout() {
-            localStorage.removeItem('user');
+        // Logout (using session)
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
             window.location.href = '/';
         }
 
@@ -373,16 +383,15 @@
             document.getElementById('selectedFood').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Add meal
+        // Add meal (using session)
         async function addMeal() {
-            if (!selectedFoodData || !currentUser) return;
+            if (!selectedFoodData) return;
             
             try {
                 const response = await fetch('/api/meals/add', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        user_id: currentUser.id,
                         food_name: selectedFoodData.food_name,
                         calories: selectedFoodData.calories,
                         protein_g: selectedFoodData.protein_g,
@@ -390,6 +399,14 @@
                         fats_g: selectedFoodData.fats_g
                     })
                 });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/';
+                        return;
+                    }
+                    throw new Error('Failed to add meal');
+                }
                 
                 const data = await response.json();
                 
@@ -416,12 +433,10 @@
             }
         }
 
-        // Load today's meals
+        // Load today's meals (using session)
         async function loadTodaysMeals() {
-            if (!currentUser) return;
-            
             try {
-                const response = await fetch(`/api/meals/today?user_id=${currentUser.id}`);
+                const response = await fetch('/api/meals/today');
                 const data = await response.json();
                 
                 const mealsList = document.getElementById('mealsList');

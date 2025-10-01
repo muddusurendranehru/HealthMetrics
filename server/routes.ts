@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
@@ -7,6 +7,7 @@ import { insertUserSchema, insertMealSchema, insertExerciseSchema, insertSleepRe
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import path from "path";
+import "./session";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -17,6 +18,14 @@ const signupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
+
+// Authentication middleware
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (!req.session?.userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  next();
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from public directory
@@ -189,6 +198,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Store user ID in session
+      req.session.userId = user.id;
+
       // Don't return password in response
       const { passwordHash: _, ...userResponse } = user;
       
@@ -211,7 +223,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user profile
+  // User logout
+  app.post("/api/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Failed to logout" });
+      }
+      res.json({ success: true, message: "Logged out successfully" });
+    });
+  });
+
+  // Get current user profile
+  app.get("/api/user/me", requireAuth, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.session.userId!.toString());
+      if (!user) {
+        return res.status(404).json({ 
+          message: "User not found" 
+        });
+      }
+
+      // Don't return password in response
+      const { passwordHash, ...userResponse } = user;
+      
+      res.json(userResponse);
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ 
+        message: "Internal server error" 
+      });
+    }
+  });
+
+  // Get user profile by ID (kept for backwards compatibility)
   app.get("/api/user/:id", async (req, res) => {
     try {
       const user = await storage.getUser(req.params.id);
@@ -271,23 +315,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // STANDARDIZED MEAL ENDPOINTS (must come before /api/meals/:userId)
   // ========================================
 
-  // Get today's meals (standardized)
-  app.get('/api/meals/today', async (req, res) => {
+  // Get today's meals (standardized, using session)
+  app.get('/api/meals/today', requireAuth, async (req, res) => {
     try {
-      const { user_id } = req.query;
-      
-      if (!user_id) {
-        return res.status(400).json({ error: 'User ID required' });
-      }
+      const userId = req.session.userId!;
       
       const result = await db.execute(sql`
         SELECT * FROM meal_logs 
-        WHERE user_id = ${user_id}
+        WHERE user_id = ${userId}
         AND meal_date = CURRENT_DATE
         ORDER BY created_at DESC
       `);
       
-      console.log(`✅ Fetched ${result.rows.length} meals for user ${user_id}`);
+      console.log(`✅ Fetched ${result.rows.length} meals for user ${userId}`);
       res.json({ meals: result.rows });
     } catch (error) {
       console.error('❌ Fetch meals error:', error);
@@ -295,13 +335,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Add meal endpoint (standardized)
-  app.post('/api/meals/add', async (req, res) => {
+  // Add meal endpoint (standardized, using session)
+  app.post('/api/meals/add', requireAuth, async (req, res) => {
     try {
-      const { user_id, food_name, calories, protein_g, carbs_g, fats_g } = req.body;
+      const userId = req.session.userId!;
+      const { food_name, calories, protein_g, carbs_g, fats_g } = req.body;
       
-      if (!user_id || !food_name) {
-        return res.status(400).json({ error: 'User ID and food name required' });
+      if (!food_name) {
+        return res.status(400).json({ error: 'Food name required' });
       }
       
       const result = await db.execute(sql`
@@ -315,7 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           meal_date
         )
         VALUES (
-          ${user_id},
+          ${userId},
           ${food_name},
           ${calories || 0},
           ${protein_g || 0},
@@ -326,7 +367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         RETURNING *
       `);
       
-      console.log(`✅ Meal added for user ${user_id}:`, food_name);
+      console.log(`✅ Meal added for user ${userId}:`, food_name);
       res.json({ success: true, meal: result.rows[0] });
     } catch (error) {
       console.error('❌ Add meal error:', error);
@@ -574,8 +615,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // FOOD SEARCH ENDPOINT
   // ========================================
 
-  // Food search endpoint (standardized)
-  app.get('/api/foods/search', async (req, res) => {
+  // Food search endpoint (standardized, protected)
+  app.get('/api/foods/search', requireAuth, async (req, res) => {
     try {
       const { q } = req.query;
       
@@ -598,16 +639,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete meal
-  app.delete('/api/meals/:id', async (req, res) => {
+  // Delete meal (protected, verify ownership)
+  app.delete('/api/meals/:id', requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
+      const userId = req.session.userId!;
       
+      // Only delete if meal belongs to current user
       await db.execute(sql`
-        DELETE FROM meal_logs WHERE id = ${parseInt(id)}
+        DELETE FROM meal_logs 
+        WHERE id = ${parseInt(id)} 
+        AND user_id = ${userId}
       `);
       
-      console.log(`✅ Meal deleted: ${id}`);
+      console.log(`✅ Meal deleted: ${id} by user ${userId}`);
       res.json({ success: true });
     } catch (error) {
       console.error('❌ Delete meal error:', error);

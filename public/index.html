@@ -297,19 +297,16 @@
                 
                 const data = await response.json();
                 
-                if (data.success && data.user) {
-                    // Save user to localStorage
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    
+                if (response.ok && data.success) {
                     msg.textContent = '✅ Login successful! Redirecting to dashboard...';
                     msg.className = 'message success';
                     
-                    // Redirect to dashboard
+                    // Redirect to dashboard (session is stored on server)
                     setTimeout(() => {
                         window.location.href = '/dashboard.html';
                     }, 1500);
                 } else {
-                    msg.textContent = '❌ ' + (data.error || 'Login failed');
+                    msg.textContent = '❌ ' + (data.message || 'Login failed');
                     msg.className = 'message error';
                 }
             } catch (error) {
