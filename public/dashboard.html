@@ -304,7 +304,9 @@
         // Check if user is logged in (using session)
         async function checkAuth() {
             try {
-                const response = await fetch('/api/user/me');
+                const response = await fetch('/api/user/me', {
+                    credentials: 'include'
+                });
                 if (!response.ok) {
                     window.location.href = '/';
                     return null;
@@ -322,7 +324,10 @@
         // Logout (using session)
         async function logout() {
             try {
-                await fetch('/api/logout', { method: 'POST' });
+                await fetch('/api/logout', { 
+                    method: 'POST',
+                    credentials: 'include'
+                });
             } catch (error) {
                 console.error('Logout error:', error);
             }
@@ -342,7 +347,9 @@
             results.innerHTML = '<div class="empty-state">🔍 Searching 142+ foods...</div>';
             
             try {
-                const response = await fetch(`/api/foods/search?q=${encodeURIComponent(query)}`);
+                const response = await fetch(`/api/foods/search?q=${encodeURIComponent(query)}`, {
+                    credentials: 'include'
+                });
                 const data = await response.json();
                 
                 if (data.foods && data.foods.length > 0) {
@@ -391,6 +398,7 @@
                 const response = await fetch('/api/meals/add', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
+                    credentials: 'include',
                     body: JSON.stringify({
                         food_name: selectedFoodData.food_name,
                         calories: selectedFoodData.calories,
@@ -436,7 +444,9 @@
         // Load today's meals (using session)
         async function loadTodaysMeals() {
             try {
-                const response = await fetch('/api/meals/today');
+                const response = await fetch('/api/meals/today', {
+                    credentials: 'include'
+                });
                 const data = await response.json();
                 
                 const mealsList = document.getElementById('mealsList');
@@ -490,7 +500,8 @@
             
             try {
                 const response = await fetch(`/api/meals/${id}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    credentials: 'include'
                 });
                 
                 const data = await response.json();

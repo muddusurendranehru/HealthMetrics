@@ -9,6 +9,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Trust proxy for cookie security in hosted environments (Replit)
+app.set('trust proxy', 1);
+
 // Setup PostgreSQL session store
 const PgSession = connectPgSimple(session);
 
@@ -26,7 +29,9 @@ app.use(
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      // For Replit preview iframe: always use SameSite=None with Secure
+      sameSite: 'none',
+      secure: true,
     },
   })
 );
