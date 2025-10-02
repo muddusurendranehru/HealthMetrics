@@ -1,0 +1,165 @@
+-- ========================================
+-- DIABETES-FRIENDLY MILLET RECIPES
+-- Source: Tarla Dalal + IIMR Nutrition Data
+-- 100+ Safe recipes to add to your NutriBot
+-- ========================================
+-- Instructions:
+-- 1. Copy this entire file
+-- 2. Go to Replit Shell
+-- 3. Run: psql "$DATABASE_URL"
+-- 4. Paste this SQL and press Enter
+-- ========================================
+
+INSERT INTO food_nutrition (name, calories, protein_g, carbs_g, fat_g) VALUES
+
+-- RAGI (FINGER MILLET) RECIPES - Low GI: 49-68
+('Ragi roti', 95, 3.2, 18.0, 1.5),
+('Ragi dosa', 85, 2.8, 16.5, 1.2),
+('Ragi idli', 75, 2.5, 14.0, 0.8),
+('Ragi upma', 120, 3.5, 22.0, 2.0),
+('Ragi porridge', 110, 3.0, 20.0, 1.8),
+('Ragi mudde', 130, 3.8, 24.0, 1.5),
+('Ragi malt', 95, 2.8, 18.0, 1.2),
+('Ragi java', 105, 3.2, 19.5, 1.5),
+('Ragi halwa', 140, 3.0, 26.0, 2.5),
+('Ragi ladoo', 135, 3.5, 24.0, 2.8),
+('Ragi kheer', 125, 3.2, 22.0, 2.2),
+('Ragi pancake', 90, 3.0, 17.0, 1.8),
+('Ragi uttapam', 88, 2.9, 16.8, 1.4),
+('Ragi bhakri', 92, 3.1, 17.5, 1.3),
+('Ragi ambali', 85, 2.6, 16.0, 1.0),
+('Ragi vegetable dosa', 95, 3.5, 17.5, 1.6),
+('Ragi onion dosa', 92, 3.2, 17.0, 1.5),
+('Stuffed ragi roti with cauliflower', 105, 4.0, 19.0, 2.0),
+('Stuffed ragi roti with methi', 100, 3.8, 18.5, 1.8),
+('Ragi and spinach dosa', 90, 3.4, 16.8, 1.4),
+('Ragi bajra khakhra', 80, 2.8, 15.0, 1.2),
+('Ragi puttu', 115, 3.3, 21.0, 1.6),
+('Ragi vada', 95, 3.0, 17.5, 1.8),
+('Ragi adai', 100, 3.6, 18.5, 1.7),
+('Ragi and carrot roti', 98, 3.4, 18.0, 1.6),
+
+-- BAJRA (PEARL MILLET) RECIPES - Low GI: 54
+('Bajra roti', 100, 3.5, 19.0, 1.8),
+('Bajra khichdi', 145, 5.0, 26.0, 2.5),
+('Bajra dosa', 88, 3.0, 17.0, 1.5),
+('Bajra idli', 78, 2.7, 15.0, 1.0),
+('Bajra upma', 125, 4.0, 23.0, 2.2),
+('Bajra porridge', 115, 3.8, 21.0, 2.0),
+('Bajra thepla', 95, 3.2, 18.0, 1.6),
+('Bajra bhakri', 97, 3.3, 18.5, 1.7),
+('Bajra paratha', 110, 3.8, 20.0, 2.0),
+('Bajra uttapam', 90, 3.1, 17.5, 1.5),
+('Bajra ladoo', 130, 3.5, 24.0, 2.5),
+('Bajra dhokla', 85, 3.0, 16.0, 1.3),
+('Bajra pizza base', 120, 4.0, 22.0, 2.0),
+('Bajra methi paratha', 105, 4.2, 19.0, 1.9),
+('Bajra paneer paratha', 125, 5.5, 20.0, 2.8),
+('Cauliflower and bajra roti', 102, 3.8, 19.0, 1.8),
+('Bajra carrot onion uttapa', 93, 3.3, 17.8, 1.6),
+('Bajra whole moong khichdi', 150, 6.0, 27.0, 2.5),
+('Bajra moong dal khichdi', 148, 5.8, 26.5, 2.4),
+('Palak bajra khichdi', 140, 5.5, 25.0, 2.3),
+('Bajra green pea khichdi', 145, 5.5, 26.5, 2.4),
+('Bajra aloo roti', 108, 3.5, 20.0, 1.9),
+('Bajra onion roti', 95, 3.3, 18.5, 1.7),
+('Bajra methi thepla', 92, 3.4, 17.5, 1.6),
+('Bajra vegetable khichdi', 142, 5.2, 25.5, 2.3),
+
+-- JOWAR (SORGHUM) RECIPES - Low GI: 62
+('Jowar roti', 96, 3.3, 18.5, 1.4),
+('Jowar bhakri', 98, 3.4, 19.0, 1.5),
+('Jowar dosa', 86, 2.9, 16.8, 1.3),
+('Jowar idli', 76, 2.6, 14.8, 0.9),
+('Jowar upma', 122, 3.8, 22.5, 2.0),
+('Jowar khichdi', 140, 4.8, 25.5, 2.3),
+('Jowar porridge', 112, 3.5, 20.5, 1.8),
+('Jowar uttapam', 88, 3.0, 17.2, 1.4),
+('Jowar thepla', 93, 3.2, 18.0, 1.5),
+('Jowar paratha', 108, 3.7, 20.0, 1.9),
+('Jowar dhokla', 83, 2.8, 15.8, 1.2),
+('Jowar vada', 92, 3.1, 17.5, 1.6),
+('Jowar adai', 98, 3.5, 18.5, 1.6),
+('Jowar pyaz ki roti', 100, 3.5, 19.0, 1.7),
+('Mooli jowar roti', 97, 3.4, 18.5, 1.6),
+('Jowar bajra garlic roti', 102, 3.6, 19.5, 1.8),
+('Jowar methi roti', 95, 3.5, 18.0, 1.6),
+('Jowar palak roti', 94, 3.6, 17.8, 1.5),
+('Jowar aloo paratha', 110, 3.8, 20.5, 2.0),
+('Jowar paneer paratha', 128, 5.2, 21.0, 2.9),
+('Jowar vegetable dosa', 92, 3.3, 17.5, 1.5),
+('Jowar onion uttapam', 90, 3.1, 17.5, 1.4),
+('Jowar rava upma', 125, 3.9, 23.0, 2.1),
+('Jowar pongal', 135, 4.2, 24.5, 2.2),
+('Jowar ragi dates porridge', 118, 3.5, 22.0, 1.9),
+
+-- MULTIGRAIN MILLET COMBINATIONS
+('Multigrain roti (5 flour)', 102, 3.8, 19.5, 1.7),
+('Nutritious thalipeeth', 115, 4.2, 21.0, 2.0),
+('Jowar bajra thalipeeth', 112, 4.0, 20.5, 1.9),
+('Three grain paratha', 108, 3.9, 20.0, 1.8),
+('Multigrain thepla', 98, 3.5, 18.5, 1.6),
+('Multigrain dosa', 90, 3.2, 17.5, 1.5),
+('Multigrain idli', 80, 2.9, 15.5, 1.1),
+('Multigrain uttapam', 92, 3.3, 17.8, 1.5),
+('Multigrain khichdi', 145, 5.5, 26.0, 2.4),
+('Multigrain porridge', 120, 4.0, 22.0, 2.0),
+('Ragi bajra roti', 97, 3.4, 18.5, 1.6),
+('Jowar ragi roti', 96, 3.3, 18.3, 1.5),
+('Bajra jowar roti', 98, 3.4, 18.8, 1.6),
+
+-- FOXTAIL MILLET (KORRA/NAVANE) - Low GI: 50
+('Foxtail millet upma', 118, 3.6, 21.5, 2.0),
+('Foxtail millet khichdi', 138, 4.5, 25.0, 2.2),
+('Foxtail millet dosa', 84, 2.8, 16.5, 1.3),
+('Foxtail millet idli', 74, 2.5, 14.5, 0.9),
+('Foxtail millet pulao', 155, 4.8, 28.0, 2.8),
+('Foxtail millet pongal', 132, 4.0, 24.0, 2.1),
+('Foxtail millet porridge', 110, 3.4, 20.0, 1.8),
+('Foxtail millet lemon rice', 142, 3.8, 26.0, 2.4),
+
+-- LITTLE MILLET (SAMAI) - Low GI: 52
+('Little millet upma', 115, 3.5, 21.0, 1.9),
+('Little millet khichdi', 135, 4.3, 24.5, 2.1),
+('Little millet pulao', 152, 4.6, 27.5, 2.7),
+('Little millet pongal', 130, 3.9, 23.5, 2.0),
+('Little millet dosa', 82, 2.7, 16.2, 1.2),
+('Little millet idli', 72, 2.4, 14.2, 0.8),
+('Little millet curd rice', 125, 3.6, 22.5, 2.0),
+('Little millet lemon rice', 140, 3.7, 25.5, 2.3),
+
+-- KODO MILLET (VARAGU) - Low GI: 49
+('Kodo millet upma', 117, 3.7, 21.2, 1.9),
+('Kodo millet khichdi', 137, 4.4, 24.8, 2.2),
+('Kodo millet pulao', 154, 4.7, 27.8, 2.8),
+('Kodo millet dosa', 83, 2.8, 16.3, 1.2),
+('Kodo millet idli', 73, 2.4, 14.3, 0.8),
+('Kodo millet pongal', 131, 3.9, 23.8, 2.0),
+('Kodo millet biryani', 165, 5.5, 29.0, 2.9),
+('Kodo millet porridge', 112, 3.5, 20.3, 1.8),
+
+-- BARNYARD MILLET (SANWA/JHANGORA) - Low GI: 50
+('Barnyard millet upma', 116, 3.5, 21.0, 1.9),
+('Barnyard millet khichdi', 136, 4.2, 24.5, 2.1),
+('Barnyard millet pulao', 153, 4.5, 27.5, 2.7),
+('Barnyard millet dosa', 81, 2.7, 16.0, 1.2),
+('Barnyard millet idli', 71, 2.3, 14.0, 0.8),
+('Barnyard millet pongal', 129, 3.8, 23.3, 2.0),
+('Barnyard millet lemon rice', 139, 3.6, 25.2, 2.3),
+('Barnyard millet curd rice', 124, 3.5, 22.2, 1.9),
+
+-- PROSO MILLET (PANIVARAGU) - Low GI: 55
+('Proso millet upma', 119, 3.8, 21.8, 2.0),
+('Proso millet khichdi', 139, 4.6, 25.2, 2.2),
+('Proso millet pulao', 156, 4.9, 28.2, 2.8),
+('Proso millet dosa', 85, 2.9, 16.7, 1.3),
+('Proso millet idli', 75, 2.5, 14.7, 0.9),
+('Proso millet porridge', 114, 3.6, 20.8, 1.9)
+
+ON CONFLICT (name) DO NOTHING;
+
+-- ========================================
+-- VERIFICATION QUERY
+-- Run this after insert to verify:
+-- SELECT COUNT(*) FROM food_nutrition WHERE name LIKE '%millet%' OR name LIKE '%ragi%' OR name LIKE '%bajra%' OR name LIKE '%jowar%';
+-- ========================================
