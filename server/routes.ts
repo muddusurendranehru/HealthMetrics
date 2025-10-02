@@ -193,14 +193,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add meal - uses session user ID
   app.post("/api/meals/add", requireAuth, async (req, res) => {
     try {
-      const { food_name, calories, protein_g, carbs_g, fats_g } = req.body;
+      const { food_name, calories, protein_g, carbs_g, fats_g, meal_type } = req.body;
       const user_id = req.session.userId!;
       
       if (!food_name) {
         return res.status(400).json({ error: "Food name required" });
       }
       
-      console.log(`🔍 Adding meal for session user_id: ${user_id}`);
+      // Default to 'snack' if no meal_type provided
+      const mealType = meal_type || 'snack';
+      
+      console.log(`🔍 Adding ${mealType} for session user_id: ${user_id}`);
       
       const result: any[] = await sql`
         INSERT INTO meal_logs (
@@ -210,6 +213,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           protein_g, 
           carbs_g, 
           fats_g,
+          meal_type,
           meal_date
         )
         VALUES (
@@ -219,6 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ${protein_g || 0},
           ${carbs_g || 0},
           ${fats_g || 0},
+          ${mealType},
           CURRENT_DATE
         )
         RETURNING *

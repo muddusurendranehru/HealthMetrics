@@ -860,32 +860,268 @@
         </div>
     </div>
 
+    <!-- Add Food Modal -->
+    <div id="addFoodModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:20px; padding:30px; max-width:400px; width:90%;">
+            <h3 style="margin-bottom:20px; color:#667eea;">Add to which meal?</h3>
+            <div id="foodToAdd" style="margin-bottom:20px; padding:15px; background:#f5f5f5; border-radius:10px;"></div>
+            <div style="display:grid; gap:10px;">
+                <button onclick="addFoodToMeal('breakfast')" style="padding:15px; border:none; border-radius:10px; background:#667eea; color:white; cursor:pointer; font-size:16px;">🌅 Breakfast</button>
+                <button onclick="addFoodToMeal('lunch')" style="padding:15px; border:none; border-radius:10px; background:#667eea; color:white; cursor:pointer; font-size:16px;">☀️ Lunch</button>
+                <button onclick="addFoodToMeal('dinner')" style="padding:15px; border:none; border-radius:10px; background:#667eea; color:white; cursor:pointer; font-size:16px;">🌙 Dinner</button>
+                <button onclick="addFoodToMeal('snack')" style="padding:15px; border:none; border-radius:10px; background:#667eea; color:white; cursor:pointer; font-size:16px;">🍪 Snack</button>
+                <button onclick="closeAddFoodModal()" style="padding:15px; border:none; border-radius:10px; background:#ddd; color:#333; cursor:pointer;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        let selectedFood = null;
+        let todayMeals = [];
+
+        // Page Load - Fetch Today's Meals
+        window.addEventListener('DOMContentLoaded', async function() {
+            await loadTodayMeals();
+        });
+
+        // Load Today's Meals
+        async function loadTodayMeals() {
+            try {
+                const response = await fetch('/api/meals/today');
+                if (response.status === 401) {
+                    window.location.href = '/';
+                    return;
+                }
+                const data = await response.json();
+                todayMeals = data.meals || [];
+                displayMeals();
+                updateProgressRings();
+            } catch (error) {
+                console.error('Failed to load meals:', error);
+            }
+        }
+
+        // Display Meals by Category
+        function displayMeals() {
+            const breakfast = todayMeals.filter(m => m.meal_type === 'breakfast');
+            const lunch = todayMeals.filter(m => m.meal_type === 'lunch');
+            const dinner = todayMeals.filter(m => m.meal_type === 'dinner');
+            const snack = todayMeals.filter(m => m.meal_type === 'snack');
+
+            renderMealCategory('breakfast', '🌅', 'Breakfast', breakfast);
+            renderMealCategory('lunch', '☀️', 'Lunch', lunch);
+            renderMealCategory('snack', '🍪', 'Snacks', snack);
+            renderMealCategory('dinner', '🌙', 'Dinner', dinner);
+        }
+
+        // Render Meal Category
+        function renderMealCategory(type, icon, name, meals) {
+            const total = meals.reduce((sum, m) => sum + (parseInt(m.calories) || 0), 0);
+            const html = `
+                <div class="meal-header">
+                    <div class="meal-title">
+                        <span class="meal-icon">${icon}</span>
+                        <span class="meal-name">${name}</span>
+                    </div>
+                    <span class="meal-total">${total} kcal</span>
+                </div>
+                <div class="meal-items">
+                    ${meals.length === 0 ? `<div class="meal-item" style="color:#999;">No ${name.toLowerCase()} logged yet</div>` : ''}
+                    ${meals.map(m => `
+                        <div class="meal-item">
+                            <span class="meal-item-name">${m.food_name}</span>
+                            <span class="meal-item-calories">${m.calories} kcal</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            const categories = document.querySelectorAll('.meal-category');
+            const index = {breakfast: 0, lunch: 1, snack: 2, dinner: 3}[type];
+            if (categories[index]) {
+                categories[index].innerHTML = html;
+            }
+        }
+
+        // Update Progress Rings
+        function updateProgressRings() {
+            const totals = {
+                calories: todayMeals.reduce((sum, m) => sum + (parseInt(m.calories) || 0), 0),
+                protein: todayMeals.reduce((sum, m) => sum + (parseFloat(m.protein_g) || 0), 0),
+                carbs: todayMeals.reduce((sum, m) => sum + (parseFloat(m.carbs_g) || 0), 0),
+                fats: todayMeals.reduce((sum, m) => sum + (parseFloat(m.fats_g) || 0), 0)
+            };
+
+            const goals = { calories: 2000, protein: 75, carbs: 225, fats: 70 };
+            
+            updateRing(0, totals.calories, goals.calories, 'kcal');
+            updateRing(1, totals.protein.toFixed(1), goals.protein, 'g');
+            updateRing(2, totals.carbs.toFixed(1), goals.carbs, 'g');
+            updateRing(3, totals.fats.toFixed(1), goals.fats, 'g');
+
+            // Update Quick Stats
+            const remaining = goals.calories - totals.calories;
+            const percentage = Math.round((totals.calories / goals.calories) * 100);
+            const statBoxes = document.querySelectorAll('.stat-box .stat-value');
+            statBoxes[0].textContent = Math.max(0, remaining);
+            statBoxes[1].textContent = todayMeals.length;
+            statBoxes[2].textContent = percentage + '%';
+        }
+
+        // Update Individual Ring
+        function updateRing(index, current, goal, unit) {
+            const rings = document.querySelectorAll('.ring');
+            if (!rings[index]) return;
+            
+            const percentage = Math.min(current / goal, 1);
+            const circumference = 314;
+            const offset = circumference - (percentage * circumference);
+            
+            const circle = rings[index].querySelector('.ring-progress');
+            circle.style.strokeDashoffset = offset;
+            
+            const valueEl = rings[index].querySelector('.ring-value');
+            const maxEl = rings[index].querySelector('.ring-max');
+            valueEl.textContent = Math.round(current);
+            maxEl.textContent = `/ ${goal} ${unit}`;
+        }
+
+        // Food Search with API
+        let searchTimeout;
+        const foodSearch = document.getElementById('foodSearch');
+        foodSearch.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+            
+            if (query.length < 2) {
+                displayDefaultFoods();
+                return;
+            }
+            
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/foods/search?q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+                    displayFoodResults(data.foods || []);
+                } catch (error) {
+                    console.error('Search failed:', error);
+                }
+            }, 300);
+        });
+
+        // Display Food Results
+        function displayFoodResults(foods) {
+            const resultsDiv = document.querySelector('.food-results');
+            if (foods.length === 0) {
+                resultsDiv.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">No foods found</div>';
+                return;
+            }
+            
+            resultsDiv.innerHTML = foods.map(food => `
+                <div class="food-item">
+                    <div class="food-info">
+                        <h4>${food.food_name}</h4>
+                        <div class="food-nutrition">
+                            <span class="nutrition-badge" style="color: #667eea;">${food.calories || 0} kcal</span>
+                            <span class="nutrition-badge" style="color: #2ecc71;">${food.protein_g || 0}g protein</span>
+                            <span class="nutrition-badge" style="color: #f39c12;">${food.carbs_g || 0}g carbs</span>
+                            <span class="nutrition-badge" style="color: #e74c3c;">${food.fats_g || 0}g fats</span>
+                        </div>
+                    </div>
+                    <button class="add-food-btn" onclick='showAddFoodModal(${JSON.stringify(food)})'>+ Add</button>
+                </div>
+            `).join('');
+        }
+
+        // Display Default Foods (Ragi, Bajra, Jowar)
+        function displayDefaultFoods() {
+            const defaultFoods = [
+                { food_name: 'Ragi Dosa', calories: 85, protein_g: 2.8, carbs_g: 16.5, fats_g: 1.2 },
+                { food_name: 'Bajra Roti', calories: 100, protein_g: 3.5, carbs_g: 19, fats_g: 1.8 },
+                { food_name: 'Jowar Upma', calories: 122, protein_g: 3.8, carbs_g: 22.5, fats_g: 2 }
+            ];
+            displayFoodResults(defaultFoods);
+        }
+
+        // Show Add Food Modal
+        function showAddFoodModal(food) {
+            selectedFood = food;
+            const modal = document.getElementById('addFoodModal');
+            const foodInfo = document.getElementById('foodToAdd');
+            foodInfo.innerHTML = `
+                <strong>${food.food_name}</strong><br>
+                <small style="color:#667eea;">${food.calories} kcal • ${food.protein_g}g protein • ${food.carbs_g}g carbs • ${food.fats_g}g fats</small>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        // Close Modal
+        function closeAddFoodModal() {
+            document.getElementById('addFoodModal').style.display = 'none';
+            selectedFood = null;
+        }
+
+        // Add Food to Meal
+        async function addFoodToMeal(mealType) {
+            if (!selectedFood) return;
+            
+            // Save food name before closing modal (which clears selectedFood)
+            const foodName = selectedFood.food_name;
+            const foodData = {
+                food_name: selectedFood.food_name,
+                calories: selectedFood.calories || 0,
+                protein_g: selectedFood.protein_g || 0,
+                carbs_g: selectedFood.carbs_g || 0,
+                fats_g: selectedFood.fats_g || 0,
+                meal_type: mealType
+            };
+            
+            try {
+                const response = await fetch('/api/meals/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(foodData)
+                });
+                
+                if (response.ok) {
+                    closeAddFoodModal();
+                    await loadTodayMeals();
+                    alert(`✅ ${foodName} added to ${mealType}!`);
+                } else {
+                    const error = await response.json().catch(() => ({}));
+                    alert(`Failed to add food: ${error.error || 'Please try again'}`);
+                }
+            } catch (error) {
+                console.error('Add food error:', error);
+                alert('Network error. Please check your connection and try again.');
+            }
+        }
+
+        // Quick Action: Add Food Button
+        document.querySelectorAll('.action-btn.primary').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('foodSearch').scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('foodSearch').focus();
+            });
+        });
+
         // Language Switcher
         function switchLanguage(lang) {
             const buttons = document.querySelectorAll('.lang-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            
-            // Here you would implement actual language switching
-            console.log('Switched to:', lang);
+            console.log('Language switched to:', lang);
         }
 
         // Logout
-        function logout() {
+        async function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                // Implement logout logic
+                try {
+                    await fetch('/api/logout', { method: 'POST' });
+                } catch (e) {}
                 window.location.href = '/';
             }
         }
-
-        // Food Search with Autocomplete
-        const foodSearch = document.getElementById('foodSearch');
-        foodSearch.addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase();
-            // Implement search logic here
-            console.log('Searching for:', query);
-        });
 
         // Category Tab Switching
         const categoryTabs = document.querySelectorAll('.category-tab');
@@ -893,8 +1129,9 @@
             tab.addEventListener('click', function() {
                 categoryTabs.forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
-                // Implement category filtering
-                console.log('Selected category:', this.textContent);
+                const category = this.textContent.trim();
+                // Future: filter foods by category
+                console.log('Selected category:', category);
             });
         });
 
@@ -903,26 +1140,12 @@
         recentTags.forEach(tag => {
             tag.addEventListener('click', function() {
                 foodSearch.value = this.textContent;
-                // Trigger search
-                console.log('Selected recent food:', this.textContent);
+                foodSearch.dispatchEvent(new Event('input'));
             });
         });
 
-        // Add Food Buttons
-        const addButtons = document.querySelectorAll('.add-food-btn');
-        addButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const foodName = this.parentElement.querySelector('h4').textContent;
-                console.log('Adding food:', foodName);
-                // Implement add to meal logic
-                this.textContent = '✓ Added';
-                this.style.background = '#2ecc71';
-                setTimeout(() => {
-                    this.textContent = '+ Add';
-                    this.style.background = '#667eea';
-                }, 1500);
-            });
-        });
+        // Initialize with default foods
+        displayDefaultFoods();
     </script>
 </body>
 </html>
