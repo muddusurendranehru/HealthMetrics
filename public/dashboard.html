@@ -862,9 +862,20 @@
 
     <!-- Add Food Modal -->
     <div id="addFoodModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
-        <div style="background:white; border-radius:20px; padding:30px; max-width:400px; width:90%;">
-            <h3 style="margin-bottom:20px; color:#667eea;">Add to which meal?</h3>
+        <div style="background:white; border-radius:20px; padding:30px; max-width:450px; width:90%;">
+            <h3 style="margin-bottom:20px; color:#667eea;">Add Food</h3>
             <div id="foodToAdd" style="margin-bottom:20px; padding:15px; background:#f5f5f5; border-radius:10px;"></div>
+            
+            <!-- Quantity Selector -->
+            <div style="margin-bottom:20px;">
+                <label style="display:block; margin-bottom:8px; font-weight:600; color:#333;">Quantity (grams):</label>
+                <input type="number" id="foodQuantity" value="30" min="1" max="1000" 
+                       style="width:100%; padding:12px; border:2px solid #e0e0e0; border-radius:10px; font-size:16px;"
+                       oninput="updateFoodQuantity()">
+                <div id="calculatedNutrition" style="margin-top:10px; padding:10px; background:#f0f7ff; border-radius:8px; font-size:14px; color:#667eea;"></div>
+            </div>
+
+            <h4 style="margin-bottom:10px; color:#333;">Add to which meal?</h4>
             <div style="display:grid; gap:10px;">
                 <button onclick="addFoodToMeal('breakfast')" style="padding:15px; border:none; border-radius:10px; background:#667eea; color:white; cursor:pointer; font-size:16px;">🌅 Breakfast</button>
                 <button onclick="addFoodToMeal('lunch')" style="padding:15px; border:none; border-radius:10px; background:#667eea; color:white; cursor:pointer; font-size:16px;">☀️ Lunch</button>
@@ -1048,11 +1059,36 @@
             selectedFood = food;
             const modal = document.getElementById('addFoodModal');
             const foodInfo = document.getElementById('foodToAdd');
+            
+            // Set default quantity based on food type
+            const isNuts = food.food_name.toLowerCase().match(/almond|cashew|walnut|peanut|pistachio|nut/);
+            const defaultQuantity = isNuts ? 30 : 100;
+            
             foodInfo.innerHTML = `
                 <strong>${food.food_name}</strong><br>
-                <small style="color:#667eea;">${food.calories} kcal • ${food.protein_g}g protein • ${food.carbs_g}g carbs • ${food.fats_g}g fats</small>
+                <small style="color:#999;">Per 100g: ${food.calories} kcal • ${food.protein_g}g protein • ${food.carbs_g}g carbs • ${food.fats_g}g fats</small>
             `;
+            
+            document.getElementById('foodQuantity').value = defaultQuantity;
             modal.style.display = 'flex';
+            updateFoodQuantity();
+        }
+
+        // Update Food Quantity Calculation
+        function updateFoodQuantity() {
+            if (!selectedFood) return;
+            
+            const quantity = parseFloat(document.getElementById('foodQuantity').value) || 0;
+            const ratio = quantity / 100; // Database values are per 100g
+            
+            const calories = Math.round((selectedFood.calories || 0) * ratio);
+            const protein = ((selectedFood.protein_g || 0) * ratio).toFixed(1);
+            const carbs = ((selectedFood.carbs_g || 0) * ratio).toFixed(1);
+            const fats = ((selectedFood.fats_g || 0) * ratio).toFixed(1);
+            
+            document.getElementById('calculatedNutrition').innerHTML = `
+                <strong>For ${quantity}g:</strong> ${calories} kcal • ${protein}g protein • ${carbs}g carbs • ${fats}g fats
+            `;
         }
 
         // Close Modal
@@ -1065,14 +1101,18 @@
         async function addFoodToMeal(mealType) {
             if (!selectedFood) return;
             
-            // Save food name before closing modal (which clears selectedFood)
-            const foodName = selectedFood.food_name;
+            // Get quantity and calculate nutrition
+            const quantity = parseFloat(document.getElementById('foodQuantity').value) || 100;
+            const ratio = quantity / 100; // Database values are per 100g
+            
+            // Save food name with quantity
+            const foodName = `${selectedFood.food_name} (${quantity}g)`;
             const foodData = {
-                food_name: selectedFood.food_name,
-                calories: selectedFood.calories || 0,
-                protein_g: selectedFood.protein_g || 0,
-                carbs_g: selectedFood.carbs_g || 0,
-                fats_g: selectedFood.fats_g || 0,
+                food_name: foodName,
+                calories: Math.round((selectedFood.calories || 0) * ratio),
+                protein_g: ((selectedFood.protein_g || 0) * ratio).toFixed(1),
+                carbs_g: ((selectedFood.carbs_g || 0) * ratio).toFixed(1),
+                fats_g: ((selectedFood.fats_g || 0) * ratio).toFixed(1),
                 meal_type: mealType
             };
             
