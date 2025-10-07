@@ -9,6 +9,29 @@ import "./session";
 const DATABASE_URL = process.env.DATABASE_URL!;
 const sql = neon(DATABASE_URL);
 
+// Phone number normalization for Indian numbers
+function normalizePhoneNumber(phone: string): string {
+  // Remove all spaces and special characters
+  let cleaned = phone.replace(/[\s\-\(\)]/g, '');
+  
+  // Handle different formats:
+  // +919963123456 -> 9963123456
+  // 919963123456 -> 9963123456
+  // 9963123456 -> 9963123456
+  if (cleaned.startsWith('+91')) {
+    cleaned = cleaned.substring(3);
+  } else if (cleaned.startsWith('91') && cleaned.length === 12) {
+    cleaned = cleaned.substring(2);
+  }
+  
+  // Final validation: should be 10 digits starting with 6-9
+  if (cleaned.length === 10 && /^[6-9]\d{9}$/.test(cleaned)) {
+    return cleaned;
+  }
+  
+  throw new Error('Invalid Indian phone number format');
+}
+
 // Authentication middleware
 function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!req.session?.userId) {
@@ -37,32 +60,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register/Signup
   app.post("/api/signup", async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, phone, password } = req.body;
       
-      if (!email || !password) {
-        return res.status(400).json({ message: "Email and password required" });
+      // Require either email or phone
+      if ((!email && !phone) || !password) {
+        return res.status(400).json({ message: "Phone number (or email) and password required" });
       }
       
-      // Check if user exists
-      const existing: any[] = await sql`
-        SELECT * FROM users WHERE email = ${email}
-      `;
+      let normalizedPhone = null;
       
-      if (existing.length > 0) {
-        return res.status(400).json({ message: "User with this email already exists" });
+      // Normalize phone if provided
+      if (phone) {
+        try {
+          normalizedPhone = normalizePhoneNumber(phone);
+        } catch (error) {
+          return res.status(400).json({ message: "Invalid phone number format. Use +91, 91, or 10-digit format" });
+        }
+        
+        // Check if phone already exists
+        const existingPhone: any[] = await sql`
+          SELECT * FROM users WHERE phone_number = ${normalizedPhone}
+        `;
+        
+        if (existingPhone.length > 0) {
+          return res.status(400).json({ message: "Phone number already registered" });
+        }
+      }
+      
+      // Check if email already exists (if provided)
+      if (email) {
+        const existingEmail: any[] = await sql`
+          SELECT * FROM users WHERE email = ${email}
+        `;
+        
+        if (existingEmail.length > 0) {
+          return res.status(400).json({ message: "Email already registered" });
+        }
       }
       
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
       
-      // Insert user (note: id is UUID, password is the column name)
+      // Insert user
       const result: any[] = await sql`
-        INSERT INTO users (email, password)
-        VALUES (${email}, ${hashedPassword})
-        RETURNING id, email, created_at
+        INSERT INTO users (email, phone_number, password)
+        VALUES (${email || null}, ${normalizedPhone}, ${hashedPassword})
+        RETURNING id, email, phone_number, created_at
       `;
       
-      console.log("✅ New user registered:", email);
+      console.log("✅ New user registered:", normalizedPhone || email);
       return res.status(201).json({ 
         message: "User created successfully", 
         user: result[0] 
@@ -76,28 +122,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Login - WITH SESSION
   app.post("/api/login", async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { identifier, password } = req.body; // identifier can be email or phone
       
-      if (!email || !password) {
-        return res.status(400).json({ message: "Email and password required" });
+      if (!identifier || !password) {
+        return res.status(400).json({ message: "Phone/Email and password required" });
       }
       
-      // Find user (note: password column, not password_hash)
-      const users: any[] = await sql`
-        SELECT * FROM users WHERE email = ${email}
-      `;
+      let user = null;
       
-      if (users.length === 0) {
-        return res.status(401).json({ message: "Invalid email or password" });
+      // Check if identifier is phone number (contains only digits, possibly with + or spaces)
+      const isPhone = /^[\+\d\s\-\(\)]+$/.test(identifier);
+      
+      if (isPhone) {
+        // Try to normalize and find by phone
+        try {
+          const normalizedPhone = normalizePhoneNumber(identifier);
+          const users: any[] = await sql`
+            SELECT * FROM users WHERE phone_number = ${normalizedPhone}
+          `;
+          user = users[0] || null;
+        } catch (error) {
+          // Invalid phone format, continue to email check
+        }
       }
       
-      const user = users[0];
+      // If not found by phone, try email
+      if (!user) {
+        const users: any[] = await sql`
+          SELECT * FROM users WHERE email = ${identifier}
+        `;
+        user = users[0] || null;
+      }
+      
+      if (!user) {
+        return res.status(401).json({ message: "Invalid phone/email or password" });
+      }
       
       // Check password (column is 'password' in this schema)
       const validPassword = await bcrypt.compare(password, user.password);
       
       if (!validPassword) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res.status(401).json({ message: "Invalid phone/email or password" });
       }
       
       // Save to session (server-side, secure!)
@@ -111,7 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(500).json({ message: "Session error" });
         }
         
-        console.log("✅ User logged in:", email, "User ID:", user.id);
+        console.log("✅ User logged in:", user.phone_number || user.email, "User ID:", user.id);
         
         return res.json({ 
           success: true, 
