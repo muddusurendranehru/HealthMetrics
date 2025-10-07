@@ -186,6 +186,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get portion sizes for a food
+  app.get("/api/foods/:foodId/portions", requireAuth, async (req, res) => {
+    try {
+      const foodId = parseInt(req.params.foodId);
+      
+      const portions: any[] = await sql`
+        SELECT * FROM portion_sizes 
+        WHERE food_id = ${foodId}
+        ORDER BY portion_grams ASC
+      `;
+      
+      console.log(`✅ Found ${portions.length} portions for food ${foodId}`);
+      return res.json({ portions: portions });
+    } catch (error) {
+      console.error("❌ Get portions error:", error);
+      return res.status(500).json({ error: "Failed to get portions" });
+    }
+  });
+
   // ========================================
   // MEALS - USING SESSION (SECURE)
   // ========================================
