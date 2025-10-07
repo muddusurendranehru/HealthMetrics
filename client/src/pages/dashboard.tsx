@@ -111,8 +111,52 @@ function DataEntryForm({ userId }: { userId: string }) {
   const [mealData, setMealData] = useState({
     mealType: "",
     foodItem: "",
-    calories: ""
+    calories: "",
+    protein: "",
+    carbs: "",
+    fats: ""
   });
+  
+  // Food search state
+  const [foodSearch, setFoodSearch] = useState("");
+  const [foodResults, setFoodResults] = useState<any[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  
+  // Search foods when user types
+  useEffect(() => {
+    const searchFoods = async () => {
+      if (foodSearch.length < 2) {
+        setFoodResults([]);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/foods/search?q=${encodeURIComponent(foodSearch)}`);
+        const data = await response.json();
+        setFoodResults(data.foods || []);
+        setShowResults(true);
+      } catch (error) {
+        console.error("Search error:", error);
+      }
+    };
+    
+    const timeoutId = setTimeout(searchFoods, 300);
+    return () => clearTimeout(timeoutId);
+  }, [foodSearch]);
+  
+  // Select food from search results
+  const selectFood = (food: any) => {
+    setMealData({
+      ...mealData,
+      foodItem: food.food_name,
+      calories: food.calories.toString(),
+      protein: food.protein_g?.toString() || "",
+      carbs: food.carbs_g?.toString() || "",
+      fats: food.fats_g?.toString() || ""
+    });
+    setFoodSearch(food.food_name);
+    setShowResults(false);
+  };
 
   // Exercise form state
   const [exerciseData, setExerciseData] = useState({
@@ -147,8 +191,15 @@ function DataEntryForm({ userId }: { userId: string }) {
 
       switch (activeTab) {
         case "meal":
-          endpoint = "/api/meals";
-          payload.calories = parseInt(data.calories);
+          endpoint = "/api/meals/add";
+          payload = {
+            food_name: data.foodItem,
+            calories: parseInt(data.calories) || 0,
+            protein_g: parseFloat(data.protein) || 0,
+            carbs_g: parseFloat(data.carbs) || 0,
+            fats_g: parseFloat(data.fats) || 0,
+            meal_type: data.mealType
+          };
           break;
         case "exercise":
           endpoint = "/api/exercises";
@@ -182,7 +233,8 @@ function DataEntryForm({ userId }: { userId: string }) {
       // Reset form
       switch (activeTab) {
         case "meal":
-          setMealData({ mealType: "", foodItem: "", calories: "" });
+          setMealData({ mealType: "", foodItem: "", calories: "", protein: "", carbs: "", fats: "" });
+          setFoodSearch("");
           break;
         case "exercise":
           setExerciseData({ exerciseType: "", exerciseName: "", duration: "", caloriesBurned: "" });
@@ -304,29 +356,51 @@ function DataEntryForm({ userId }: { userId: string }) {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="foodItem">Food Item</Label>
+            <div className="relative">
+              <Label htmlFor="foodSearch">Search Food</Label>
               <Input
-                id="foodItem"
-                value={mealData.foodItem}
-                onChange={(e) => setMealData({ ...mealData, foodItem: e.target.value })}
-                placeholder="What did you eat?"
-                data-testid="input-food-item"
+                id="foodSearch"
+                value={foodSearch}
+                onChange={(e) => {
+                  setFoodSearch(e.target.value);
+                  setShowResults(true);
+                }}
+                onFocus={() => setShowResults(true)}
+                placeholder="Search: mango, upma, dosa..."
+                data-testid="input-food-search"
                 required
               />
+              
+              {/* Search Results Dropdown */}
+              {showResults && foodResults.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
+                  {foodResults.map((food) => (
+                    <button
+                      key={food.id}
+                      type="button"
+                      onClick={() => selectFood(food)}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                      data-testid={`food-result-${food.id}`}
+                    >
+                      <div className="font-medium text-gray-900 dark:text-white">{food.food_name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {food.calories} cal | P: {food.protein_g}g | C: {food.carbs_g}g | F: {food.fats_g}g
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <div>
-              <Label htmlFor="calories">Calories</Label>
-              <Input
-                id="calories"
-                type="number"
-                value={mealData.calories}
-                onChange={(e) => setMealData({ ...mealData, calories: e.target.value })}
-                placeholder="Estimated calories"
-                data-testid="input-calories"
-                required
-              />
-            </div>
+            
+            {/* Selected Food Display */}
+            {mealData.foodItem && (
+              <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
+                <div className="font-medium text-green-900 dark:text-green-100">✓ {mealData.foodItem}</div>
+                <div className="text-sm text-green-700 dark:text-green-300">
+                  {mealData.calories} cal | Protein: {mealData.protein}g | Carbs: {mealData.carbs}g | Fat: {mealData.fats}g
+                </div>
+              </div>
+            )}
           </>
         )}
 
