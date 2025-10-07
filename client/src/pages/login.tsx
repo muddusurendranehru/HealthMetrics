@@ -11,7 +11,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email"),
+  identifier: z.string().min(1, "Phone number or email is required"),
   password: z.string().min(1, "Password is required")
 });
 
@@ -24,7 +24,7 @@ export default function LoginPage() {
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      identifier: "",
       password: ""
     }
   });
@@ -71,15 +71,15 @@ export default function LoginPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="email"
+                name="identifier"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Phone Number or Email</FormLabel>
                     <FormControl>
                       <Input 
-                        type="email" 
-                        placeholder="Enter your email" 
-                        data-testid="input-email"
+                        type="text" 
+                        placeholder="9963123456 or email@example.com" 
+                        data-testid="input-identifier"
                         {...field} 
                       />
                     </FormControl>
