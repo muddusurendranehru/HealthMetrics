@@ -1,94 +1,98 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, decimal, date, serial } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, decimal, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Users table
+// Users table - matching OLD database structure
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(), // INTEGER auto-increment: 1, 2, 3...
-  email: varchar("email"),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  password: text("password").notNull(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  dateOfBirth: date("date_of_birth"),
+  height: decimal("height"),
+  goalWeight: decimal("goal_weight"),
+  activityLevel: text("activity_level"),
+  createdAt: timestamp("created_at").defaultNow(),
   phoneNumber: varchar("phone_number", { length: 20 }),
-  passwordHash: varchar("password_hash").notNull(),
+  passwordHash: varchar("password_hash"),
 });
 
-// Meals table
+// Meals table - matching OLD database structure
 export const meals = pgTable("meals", {
-  id: serial("id").primaryKey(), // INTEGER auto-increment
-  userId: integer("user_id").notNull().references(() => users.id), // INTEGER reference
-  mealName: varchar("meal_name").notNull(), // VARCHAR string
-  mealType: varchar("meal_type").notNull(), // VARCHAR: 'breakfast', 'lunch', 'dinner', 'snack'
-  calories: integer("calories").notNull(), // INTEGER (no decimals)
-  proteinG: decimal("protein_g", { precision: 5, scale: 1 }), // NUMERIC decimal (12.5)
-  carbsG: decimal("carbs_g", { precision: 5, scale: 1 }), // NUMERIC decimal (55.0)
-  fatsG: decimal("fats_g", { precision: 5, scale: 1 }), // NUMERIC decimal (8.0)
-  mealDate: date("meal_date").notNull(), // DATE: 'YYYY-MM-DD'
-  notes: text("notes"), // TEXT optional
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  mealType: text("meal_type").notNull(),
+  foodItem: text("food_item").notNull(),
+  calories: integer("calories").notNull(),
+  protein: decimal("protein"),
+  carbs: decimal("carbs"),
+  fat: decimal("fat"),
+  portion: text("portion"),
+  loggedAt: timestamp("logged_at").defaultNow(),
 });
 
-// Exercises table (simplified to match focus)
+// Exercises table - matching OLD database structure
 export const exercises = pgTable("exercises", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
   exerciseType: text("exercise_type").notNull(),
   exerciseName: text("exercise_name").notNull(),
-  duration: integer("duration"), // in minutes
+  duration: integer("duration"),
   caloriesBurned: integer("calories_burned"),
-  intensity: text("intensity"), // low, medium, high
+  intensity: text("intensity"),
   notes: text("notes"),
   loggedAt: timestamp("logged_at").defaultNow(),
 });
 
 // Sleep records table
 export const sleepRecords = pgTable("sleep_records", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
   sleepDate: date("sleep_date").notNull(),
   bedtime: timestamp("bedtime"),
   wakeTime: timestamp("wake_time"),
-  totalHours: decimal("total_hours", { precision: 4, scale: 2 }),
-  sleepQuality: integer("sleep_quality"), // 1-5 scale
-  deepSleepHours: decimal("deep_sleep_hours", { precision: 4, scale: 2 }),
-  remSleepHours: decimal("rem_sleep_hours", { precision: 4, scale: 2 }),
-  awakeCount: integer("awake_count"),
+  hoursSlept: decimal("hours_slept"),
+  sleepQuality: integer("sleep_quality"),
   notes: text("notes"),
-  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Weight tracking table
 export const weightTracking = pgTable("weight_tracking", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  weight: decimal("weight", { precision: 5, scale: 2 }).notNull(),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  weight: decimal("weight").notNull(),
   recordedAt: timestamp("recorded_at").defaultNow(),
   notes: text("notes"),
 });
 
 // Water intake table
 export const waterIntake = pgTable("water_intake", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  amount: decimal("amount", { precision: 5, scale: 2 }).notNull(), // in ml or glasses
-  unit: text("unit").default("glasses"), // glasses, ml, oz
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  amount: decimal("amount").notNull(),
+  unit: text("unit").default("glasses"),
   loggedAt: timestamp("logged_at").defaultNow(),
 });
 
-// Food nutrition table (629 foods database)
+// Food nutrition table
 export const foodNutrition = pgTable("food_nutrition", {
-  id: serial("id").primaryKey(),
-  foodName: varchar("food_name").notNull(),
-  calories: integer("calories").notNull(), // per 100g
-  proteinG: decimal("protein_g", { precision: 5, scale: 1 }), // per 100g
-  carbsG: decimal("carbs_g", { precision: 5, scale: 1 }), // per 100g
-  fatsG: decimal("fats_g", { precision: 5, scale: 1 }), // per 100g
-  imageUrl: varchar("image_url", { length: 500 }), // URL to food image
+  id: integer("id").primaryKey(),
+  foodName: varchar("food_name", { length: 255 }).notNull(),
+  calories: integer("calories").notNull(),
+  proteinG: decimal("protein_g"),
+  carbsG: decimal("carbs_g"),
+  fatsG: decimal("fats_g"),
+  imageUrl: varchar("image_url", { length: 500 }),
 });
 
-// Portion sizes table (Indian portion measurements)
+// Portion sizes table
 export const portionSizes = pgTable("portion_sizes", {
-  id: serial("id").primaryKey(),
+  id: integer("id").primaryKey(),
   foodId: integer("food_id").notNull().references(() => foodNutrition.id),
-  portionName: varchar("portion_name").notNull(), // e.g., "1 medium apple", "1 katori dal"
-  portionGrams: integer("portion_grams").notNull(), // weight in grams
+  portionName: varchar("portion_name").notNull(),
+  portionGrams: integer("portion_grams").notNull(),
 });
 
 // Relations
@@ -149,10 +153,14 @@ export const portionSizesRelations = relations(portionSizes, ({ one }) => ({
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
+  createdAt: true,
+  phoneNumber: true,
+  passwordHash: true,
 });
 
 export const insertMealSchema = createInsertSchema(meals).omit({
   id: true,
+  loggedAt: true,
 });
 
 export const insertExerciseSchema = createInsertSchema(exercises).omit({

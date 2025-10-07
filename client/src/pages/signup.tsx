@@ -12,8 +12,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 
 const signupSchema = z.object({
-  phone: z.string().min(10, "Phone number is required").regex(/^[\+\d\s\-\(\)]+$/, "Invalid phone number format"),
-  email: z.string().email("Please enter a valid email").optional().or(z.literal('')),
+  email: z.string().email("Please enter a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
@@ -30,7 +29,6 @@ export default function SignupPage() {
   const form = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      phone: "",
       email: "",
       password: "",
       confirmPassword: ""
@@ -38,7 +36,7 @@ export default function SignupPage() {
   });
 
   const signupMutation = useMutation({
-    mutationFn: async (data: { phone: string; email?: string; password: string }) => {
+    mutationFn: async (data: { email: string; password: string }) => {
       const response = await apiRequest("POST", "/api/signup", data);
       return await response.json();
     },
@@ -60,8 +58,7 @@ export default function SignupPage() {
 
   const onSubmit = (data: SignupForm) => {
     signupMutation.mutate({
-      phone: data.phone,
-      email: data.email || undefined,
+      email: data.email,
       password: data.password
     });
   };
@@ -80,32 +77,14 @@ export default function SignupPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="tel" 
-                        placeholder="+91 9963123456 or 9963123456" 
-                        data-testid="input-phone"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email (Optional)</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input 
                         type="email" 
-                        placeholder="Enter your email (optional)" 
+                        placeholder="Enter your email" 
                         data-testid="input-email"
                         {...field} 
                       />

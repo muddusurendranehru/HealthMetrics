@@ -57,58 +57,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AUTH ROUTES
   // ========================================
 
-  // Register/Signup
+  // Register/Signup - EMAIL ONLY
   app.post("/api/signup", async (req, res) => {
     try {
-      const { email, phone, password } = req.body;
+      const { email, password } = req.body;
       
-      // Require either email or phone
-      if ((!email && !phone) || !password) {
-        return res.status(400).json({ message: "Phone number (or email) and password required" });
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password required" });
       }
       
-      let normalizedPhone = null;
+      // Check if email already exists
+      const existingEmail: any[] = await sql`
+        SELECT * FROM users WHERE email = ${email}
+      `;
       
-      // Normalize phone if provided
-      if (phone) {
-        try {
-          normalizedPhone = normalizePhoneNumber(phone);
-        } catch (error) {
-          return res.status(400).json({ message: "Invalid phone number format. Use +91, 91, or 10-digit format" });
-        }
-        
-        // Check if phone already exists
-        const existingPhone: any[] = await sql`
-          SELECT * FROM users WHERE phone_number = ${normalizedPhone}
-        `;
-        
-        if (existingPhone.length > 0) {
-          return res.status(400).json({ message: "Phone number already registered" });
-        }
-      }
-      
-      // Check if email already exists (if provided)
-      if (email) {
-        const existingEmail: any[] = await sql`
-          SELECT * FROM users WHERE email = ${email}
-        `;
-        
-        if (existingEmail.length > 0) {
-          return res.status(400).json({ message: "Email already registered" });
-        }
+      if (existingEmail.length > 0) {
+        return res.status(400).json({ message: "Email already registered" });
       }
       
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
       
-      // Insert user
+      // Insert user with password in the 'password' column (old table structure)
       const result: any[] = await sql`
-        INSERT INTO users (email, phone_number, password_hash)
-        VALUES (${email || null}, ${normalizedPhone}, ${hashedPassword})
-        RETURNING id, email, phone_number, created_at
+        INSERT INTO users (email, password)
+        VALUES (${email}, ${hashedPassword})
+        RETURNING id, email, created_at
       `;
       
-      console.log("✅ New user registered:", normalizedPhone || email);
+      console.log("✅ New user registered:", email);
       return res.status(201).json({ 
         message: "User created successfully", 
         user: result[0] 
@@ -119,53 +96,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Login - WITH SESSION
+  // Login - EMAIL ONLY WITH SESSION
   app.post("/api/login", async (req, res) => {
     try {
-      const { identifier, password } = req.body; // identifier can be email or phone
+      const { email, password } = req.body;
       
-      if (!identifier || !password) {
-        return res.status(400).json({ message: "Phone/Email and password required" });
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password required" });
       }
       
-      let user = null;
-      const trimmedIdentifier = identifier.trim();
+      // Find user by email
+      const users: any[] = await sql`
+        SELECT * FROM users WHERE email = ${email.trim()}
+      `;
       
-      // Check if identifier looks like email (contains @)
-      const isEmail = trimmedIdentifier.includes('@');
-      
-      if (isEmail) {
-        // Try email first
-        const users: any[] = await sql`
-          SELECT * FROM users WHERE email = ${trimmedIdentifier}
-        `;
-        user = users[0] || null;
-      } else {
-        // Try phone number
-        try {
-          const normalizedPhone = normalizePhoneNumber(trimmedIdentifier);
-          const users: any[] = await sql`
-            SELECT * FROM users WHERE phone_number = ${normalizedPhone}
-          `;
-          user = users[0] || null;
-        } catch (error) {
-          // Invalid phone format, try as email fallback
-          const users: any[] = await sql`
-            SELECT * FROM users WHERE email = ${trimmedIdentifier}
-          `;
-          user = users[0] || null;
-        }
-      }
+      const user = users[0];
       
       if (!user) {
-        return res.status(401).json({ message: "Invalid phone/email or password" });
+        return res.status(401).json({ message: "Invalid email or password" });
       }
       
-      // Check password
+      // Check password (old table uses 'password' column)
       const validPassword = await bcrypt.compare(password, user.password_hash || user.password);
       
       if (!validPassword) {
-        return res.status(401).json({ message: "Invalid phone/email or password" });
+        return res.status(401).json({ message: "Invalid email or password" });
       }
       
       // Save to session (server-side, secure!)
@@ -179,7 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(500).json({ message: "Session error" });
         }
         
-        console.log("✅ User logged in:", user.phone_number || user.email, "User ID:", user.id);
+        console.log("✅ User logged in:", user.email, "User ID:", user.id);
         
         return res.json({ 
           success: true, 
