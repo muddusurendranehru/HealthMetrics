@@ -1,0 +1,323 @@
+// Add Image URLs to Food Items
+// This script adds image URLs to your existing food data
+
+const { neon } = require('@neondatabase/serverless');
+
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://user:password@host/nutribot';
+const sql = neon(DATABASE_URL);
+
+// ========================================
+// IMAGE URL STRATEGIES
+// ========================================
+
+/**
+ * Strategy 1: Simple Placeholder Images
+ * Best for: Quick testing, MVP
+ * Cost: Free
+ */
+function getPlaceholderUrl(foodName) {
+  // Creates colored placeholder with food name
+  const cleanName = encodeURIComponent(foodName);
+  return `https://ui-avatars.com/api/?name=${cleanName}&size=200&background=4CAF50&color=fff&bold=true`;
+}
+
+/**
+ * Strategy 2: Unsplash Random Food Images
+ * Best for: Better looking MVP
+ * Cost: Free (with rate limits)
+ */
+function getUnsplashUrl(foodName) {
+  // Gets random food image from Unsplash
+  const searchTerm = foodName.split('(')[0].trim(); // Get main name without brackets
+  return `https://source.unsplash.com/200x200/?${encodeURIComponent(searchTerm)},food,vegetable`;
+}
+
+/**
+ * Strategy 3: Foodish API (Random Food Images)
+ * Best for: Quick realistic food images
+ * Cost: Free
+ */
+function getFoodishUrl() {
+  // Note: This API returns random images, not specific to food name
+  return 'https://foodish-api.herokuapp.com/api/images';
+}
+
+/**
+ * Strategy 4: Local File Path
+ * Best for: Production with your own images
+ * Cost: Your hosting cost
+ */
+function getLocalImagePath(foodName) {
+  // Creates path to local image file
+  const fileName = foodName
+    .toLowerCase()
+    .replace(/[()]/g, '') // Remove brackets
+    .replace(/\s+/g, '-'); // Replace spaces with dashes
+  
+  return `/images/foods/${fileName}.jpg`;
+}
+
+/**
+ * Strategy 5: Cloudinary URL (when you have Cloudinary account)
+ * Best for: Production, scalable
+ * Cost: Free tier available
+ */
+function getCloudinaryUrl(foodName, cloudName = 'your-cloud-name') {
+  const fileName = foodName
+    .toLowerCase()
+    .replace(/[()]/g, '')
+    .replace(/\s+/g, '-');
+  
+  return `https://res.cloudinary.com/${cloudName}/image/upload/w_200,h_200,c_fill/foods/${fileName}.jpg`;
+}
+
+// ========================================
+// MAIN FUNCTIONS
+// ========================================
+
+/**
+ * Add image URLs to all foods that don't have one
+ */
+async function addImageUrls(strategy = 'placeholder') {
+  try {
+    console.log('🖼️  Adding Image URLs to Foods');
+    console.log('================================\n');
+    
+    // Get all foods without images
+    const foods = await sql`
+      SELECT id, food_name, image_url
+      FROM food_nutrition
+      WHERE image_url IS NULL OR image_url = ''
+    `;
+    
+    console.log(`📊 Found ${foods.length} foods without images\n`);
+    
+    if (foods.length === 0) {
+      console.log('✅ All foods already have images!');
+      return;
+    }
+    
+    console.log(`🎨 Using strategy: ${strategy}\n`);
+    
+    let successCount = 0;
+    let errorCount = 0;
+    
+    // Add images based on selected strategy
+    for (const food of foods) {
+      try {
+        let imageUrl;
+        
+        switch (strategy) {
+          case 'placeholder':
+            imageUrl = getPlaceholderUrl(food.food_name);
+            break;
+          case 'unsplash':
+            imageUrl = getUnsplashUrl(food.food_name);
+            break;
+          case 'local':
+            imageUrl = getLocalImagePath(food.food_name);
+            break;
+          case 'cloudinary':
+            imageUrl = getCloudinaryUrl(food.food_name);
+            break;
+          default:
+            imageUrl = getPlaceholderUrl(food.food_name);
+        }
+        
+        // Update the database
+        await sql`
+          UPDATE food_nutrition
+          SET image_url = ${imageUrl}
+          WHERE id = ${food.id}
+        `;
+        
+        successCount++;
+        
+        // Show progress every 10 items
+        if (successCount % 10 === 0) {
+          console.log(`   ✓ Updated ${successCount}/${foods.length} items`);
+        }
+        
+      } catch (error) {
+        errorCount++;
+        console.error(`   ✗ Error updating "${food.food_name}":`, error.message);
+      }
+    }
+    
+    console.log('\n================================');
+    console.log('🎉 Image URLs Added!');
+    console.log('================================');
+    console.log(`✅ Success: ${successCount} items`);
+    if (errorCount > 0) {
+      console.log(`❌ Errors: ${errorCount} items`);
+    }
+    console.log('');
+    
+    // Show sample results
+    await showSampleResults();
+    
+  } catch (error) {
+    console.error('❌ Fatal error:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Show sample foods with their new image URLs
+ */
+async function showSampleResults() {
+  console.log('📸 Sample Results:');
+  console.log('==================\n');
+  
+  const samples = await sql`
+    SELECT food_name, image_url
+    FROM food_nutrition
+    WHERE image_url IS NOT NULL
+    LIMIT 5
+  `;
+  
+  samples.forEach(food => {
+    console.log(`${food.food_name}`);
+    console.log(`   🔗 ${food.image_url}\n`);
+  });
+}
+
+/**
+ * Update specific food with custom image URL
+ */
+async function updateSingleFoodImage(foodName, imageUrl) {
+  try {
+    const result = await sql`
+      UPDATE food_nutrition
+      SET image_url = ${imageUrl}
+      WHERE food_name = ${foodName}
+      RETURNING id, food_name, image_url
+    `;
+    
+    if (result.length > 0) {
+      console.log('✅ Updated:', result[0].food_name);
+      console.log('🔗 New URL:', result[0].image_url);
+    } else {
+      console.log('❌ Food not found:', foodName);
+    }
+  } catch (error) {
+    console.error('❌ Error:', error.message);
+  }
+}
+
+/**
+ * Check which foods are missing images
+ */
+async function checkMissingImages() {
+  try {
+    const missing = await sql`
+      SELECT COUNT(*) as count
+      FROM food_nutrition
+      WHERE image_url IS NULL OR image_url = ''
+    `;
+    
+    const total = await sql`
+      SELECT COUNT(*) as count
+      FROM food_nutrition
+    `;
+    
+    const withImages = total[0].count - missing[0].count;
+    
+    console.log('📊 Image Status Report');
+    console.log('=====================\n');
+    console.log(`Total foods: ${total[0].count}`);
+    console.log(`With images: ${withImages}`);
+    console.log(`Missing images: ${missing[0].count}\n`);
+    
+    if (missing[0].count > 0) {
+      // Show some examples
+      const examples = await sql`
+        SELECT food_name
+        FROM food_nutrition
+        WHERE image_url IS NULL OR image_url = ''
+        LIMIT 10
+      `;
+      
+      console.log('Examples of foods without images:');
+      examples.forEach(food => {
+        console.log(`  - ${food.food_name}`);
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error:', error.message);
+  }
+}
+
+// ========================================
+// COMMAND LINE INTERFACE
+// ========================================
+
+const args = process.argv.slice(2);
+const command = args[0];
+
+async function main() {
+  console.log('🚀 NutriBot Image Manager\n');
+  
+  if (!command || command === 'help') {
+    console.log('Available commands:');
+    console.log('  npm run images:add [strategy]  - Add images to all foods');
+    console.log('  npm run images:check           - Check which foods need images');
+    console.log('  npm run images:update          - Update a specific food image\n');
+    console.log('Available strategies:');
+    console.log('  placeholder  - Simple colored placeholders (default)');
+    console.log('  unsplash     - Random food images from Unsplash');
+    console.log('  local        - Local file paths (/images/foods/...)');
+    console.log('  cloudinary   - Cloudinary URLs (need account)\n');
+    console.log('Examples:');
+    console.log('  node add-image-urls.js add placeholder');
+    console.log('  node add-image-urls.js add unsplash');
+    console.log('  node add-image-urls.js check');
+    return;
+  }
+  
+  switch (command) {
+    case 'add':
+      const strategy = args[1] || 'placeholder';
+      await addImageUrls(strategy);
+      break;
+      
+    case 'check':
+      await checkMissingImages();
+      break;
+      
+    case 'update':
+      const foodName = args[1];
+      const imageUrl = args[2];
+      if (!foodName || !imageUrl) {
+        console.log('❌ Usage: node add-image-urls.js update "Food Name" "https://image-url.com"');
+        return;
+      }
+      await updateSingleFoodImage(foodName, imageUrl);
+      break;
+      
+    default:
+      console.log('❌ Unknown command. Use "help" to see available commands.');
+  }
+}
+
+// ========================================
+// RUN THE SCRIPT
+// ========================================
+
+if (require.main === module) {
+  main()
+    .then(() => {
+      console.log('✅ Done!');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('❌ Failed:', error);
+      process.exit(1);
+    });
+}
+
+module.exports = {
+  addImageUrls,
+  updateSingleFoodImage,
+  checkMissingImages
+};

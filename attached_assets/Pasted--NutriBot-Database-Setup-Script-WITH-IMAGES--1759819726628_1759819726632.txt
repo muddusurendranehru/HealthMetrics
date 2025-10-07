@@ -1,0 +1,151 @@
+-- =============================================
+-- NutriBot Database Setup Script (WITH IMAGES)
+-- =============================================
+-- This version includes support for food images
+
+-- =============================================
+-- 1. CREATE THE TABLE WITH IMAGE SUPPORT
+-- =============================================
+
+-- Create the food_nutrition table with image URL column
+CREATE TABLE IF NOT EXISTS food_nutrition (
+  id SERIAL PRIMARY KEY,
+  food_name VARCHAR(255) NOT NULL,
+  calories DECIMAL(10, 2),
+  protein_g DECIMAL(10, 2),
+  carbs_g DECIMAL(10, 2),
+  fats_g DECIMAL(10, 2),
+  image_url VARCHAR(500),  -- Store image URL or file path
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_food_name ON food_nutrition(food_name);
+CREATE INDEX IF NOT EXISTS idx_calories ON food_nutrition(calories);
+
+-- =============================================
+-- 2. ADD IMAGE COLUMN TO EXISTING TABLE
+-- =============================================
+-- If you already have the table without images, run this:
+
+-- ALTER TABLE food_nutrition ADD COLUMN IF NOT EXISTS image_url VARCHAR(500);
+
+-- =============================================
+-- 3. IMAGE URL OPTIONS
+-- =============================================
+
+-- Option 1: Use placeholder image service
+-- Example: https://via.placeholder.com/200x200?text=Palak
+UPDATE food_nutrition 
+SET image_url = 'https://via.placeholder.com/200x200?text=' || REPLACE(food_name, ' ', '+')
+WHERE image_url IS NULL;
+
+-- Option 2: Use a CDN or your own server
+-- Example: https://yourcdn.com/images/palak.jpg
+-- UPDATE food_nutrition 
+-- SET image_url = 'https://yourcdn.com/images/' || LOWER(REPLACE(food_name, ' ', '-')) || '.jpg'
+-- WHERE image_url IS NULL;
+
+-- Option 3: Use local file paths
+-- Example: /images/vegetables/palak.jpg
+-- UPDATE food_nutrition 
+-- SET image_url = '/images/vegetables/' || LOWER(REPLACE(food_name, ' ', '-')) || '.jpg'
+-- WHERE image_url IS NULL;
+
+-- =============================================
+-- 4. VERIFICATION QUERIES
+-- =============================================
+
+-- View all foods with image URLs
+SELECT id, food_name, calories, image_url 
+FROM food_nutrition 
+LIMIT 10;
+
+-- Count foods with images
+SELECT 
+  COUNT(*) as total_foods,
+  COUNT(image_url) as foods_with_images,
+  COUNT(*) - COUNT(image_url) as foods_without_images
+FROM food_nutrition;
+
+-- Find foods missing images
+SELECT id, food_name 
+FROM food_nutrition 
+WHERE image_url IS NULL;
+
+-- =============================================
+-- 5. USEFUL IMAGE QUERIES FOR YOUR APP
+-- =============================================
+
+-- Get food with image for display
+SELECT 
+  id,
+  food_name,
+  calories,
+  protein_g,
+  carbs_g,
+  fats_g,
+  COALESCE(image_url, 'https://via.placeholder.com/200x200?text=No+Image') as image_url
+FROM food_nutrition
+WHERE food_name ILIKE '%palak%';
+
+-- Get low-carb foods with images (good for diabetes)
+SELECT 
+  food_name,
+  carbs_g,
+  calories,
+  image_url
+FROM food_nutrition
+WHERE carbs_g < 10 AND image_url IS NOT NULL
+ORDER BY carbs_g;
+
+-- =============================================
+-- 6. PERFORMANCE TIPS
+-- =============================================
+
+/*
+IMPORTANT TIPS FOR IMAGES:
+
+1. NEVER store actual image data in PostgreSQL
+   - Use VARCHAR to store URLs or file paths only
+   - Keep actual images in: CDN, S3, local storage, etc.
+
+2. Image Storage Options (Best to Worst):
+   ✅ CDN (Cloudinary, Imgix) - Best for production
+   ✅ Cloud Storage (AWS S3, Google Cloud Storage)
+   ✅ Your own server /public/images folder
+   ⚠️ Placeholder services (good for testing)
+   ❌ Database BLOB (never do this!)
+
+3. Image Optimization:
+   - Use thumbnails (200x200px) for lists
+   - Use full size (800x800px) for detail view
+   - Format: WebP or JPG (not PNG for photos)
+   - Lazy load images in your app
+
+4. Fallback Strategy:
+   - Always have a default placeholder image
+   - Use COALESCE in SQL queries
+   - Handle missing images gracefully in your app
+
+5. For Your App:
+   - Store only URL strings in database
+   - Load images on demand in your UI
+   - Cache images in browser
+   - Use img loading="lazy" in HTML
+*/
+
+-- =============================================
+-- 7. SAMPLE DATA WITH IMAGES
+-- =============================================
+
+-- Insert sample food item with image
+INSERT INTO food_nutrition 
+  (food_name, calories, protein_g, carbs_g, fats_g, image_url)
+VALUES 
+  ('Palak (Spinach)', 23, 2.9, 3.6, 0.4, 'https://yourdomain.com/images/palak.jpg');
+
+-- Update existing item with image
+UPDATE food_nutrition
+SET image_url = 'https://yourdomain.com/images/vankaya.jpg'
+WHERE food_name = 'Vankaya (Brinjal)';
