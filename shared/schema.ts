@@ -6,7 +6,8 @@ import { z } from "zod";
 // Users table
 export const users = pgTable("users", {
   id: serial("id").primaryKey(), // INTEGER auto-increment: 1, 2, 3...
-  email: varchar("email").notNull().unique(),
+  email: varchar("email"),
+  phoneNumber: varchar("phone_number", { length: 20 }),
   passwordHash: varchar("password_hash").notNull(),
 });
 
