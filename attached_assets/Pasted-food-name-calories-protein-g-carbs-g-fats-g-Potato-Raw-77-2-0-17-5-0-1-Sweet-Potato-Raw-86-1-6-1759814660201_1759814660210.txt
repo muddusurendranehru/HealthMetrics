@@ -1,0 +1,98 @@
+food_name,calories,protein_g,carbs_g,fats_g
+Potato (Raw),77,2.0,17.5,0.1
+Sweet Potato (Raw),86,1.6,20.1,0.1
+Carrot (Raw),41,0.9,9.6,0.2
+Beetroot (Raw),43,1.6,9.6,0.2
+Radish (White),16,0.7,3.4,0.1
+Turnip,28,0.9,6.4,0.1
+Onion (Raw),40,1.1,9.3,0.1
+Tomato (Raw),18,0.9,3.9,0.2
+Cucumber,15,0.7,3.6,0.1
+Bottle Gourd (Lauki),14,0.6,3.4,0.0
+Ridge Gourd (Turai),20,1.2,4.4,0.2
+Bitter Gourd (Karela),17,1.0,3.7,0.2
+Ash Gourd (Petha),13,0.4,3.0,0.1
+Snake Gourd (Chichinda),18,0.5,4.2,0.2
+Pumpkin (Raw),26,1.0,6.5,0.1
+Zucchini,17,1.2,3.1,0.3
+Bell Pepper Green,20,0.9,4.6,0.2
+Bell Pepper Red,31,1.0,6.0,0.3
+Bell Pepper Yellow,27,1.0,6.3,0.2
+Green Chilli,40,2.0,8.8,0.2
+Red Chilli (Fresh),40,2.0,8.8,0.4
+Eggplant (Baingan),25,1.0,5.9,0.2
+Okra (Bhindi),33,1.9,7.0,0.2
+Cabbage (Green),25,1.3,5.8,0.1
+Cabbage (Red),31,1.4,7.4,0.2
+Cauliflower,25,1.9,5.0,0.3
+Broccoli,34,2.8,7.0,0.4
+Spinach (Palak),23,2.9,3.6,0.4
+Fenugreek Leaves (Methi),49,4.4,6.0,0.9
+Amaranth Leaves (Chaulai),23,2.5,4.0,0.4
+Mustard Greens (Sarson),27,2.9,4.7,0.4
+Coriander Leaves (Dhania),23,2.1,3.7,0.5
+Mint Leaves (Pudina),44,3.8,8.4,0.7
+Curry Leaves,108,6.1,18.7,1.0
+Dill Leaves (Suva),43,3.5,7.0,1.1
+Celery,16,0.7,3.0,0.2
+Lettuce (Iceberg),14,0.9,3.0,0.1
+Lettuce (Romaine),17,1.2,3.3,0.3
+Kale,49,4.3,8.8,0.9
+Swiss Chard,19,1.8,3.7,0.2
+Drumstick (Moringa),37,2.1,8.5,0.2
+Drumstick Leaves,64,9.4,8.3,1.4
+Cluster Beans (Guar),16,3.2,3.2,0.1
+French Beans (Green Beans),31,1.8,7.0,0.2
+Broad Beans (Sem),88,7.9,17.6,0.4
+Green Peas (Matar),81,5.4,14.5,0.4
+Snow Peas,42,2.8,7.6,0.2
+Mushroom (Button),22,3.1,3.3,0.3
+Mushroom (Oyster),33,3.3,6.1,0.4
+Shiitake Mushroom,34,2.2,6.8,0.5
+Baby Corn,23,2.0,4.6,0.3
+Corn (Sweet Corn),86,3.3,18.7,1.4
+Jackfruit (Raw Green),95,1.7,23.2,0.6
+Raw Banana (Green Plantain),122,1.3,31.9,0.4
+Banana Flower (Vazhaipoo),51,1.6,9.9,0.5
+Lotus Root (Kamal Kakdi),74,2.6,17.2,0.1
+Lotus Stem (Nadru),60,2.0,14.0,0.1
+Yam (Suran),118,1.5,27.9,0.2
+Arbi (Colocasia),112,1.5,26.5,0.2
+Elephant Foot Yam (Suran),97,1.4,23.6,0.1
+Water Chestnut (Singhara),97,1.4,23.9,0.1
+Bamboo Shoots,27,2.6,5.2,0.3
+Bean Sprouts,30,3.0,5.9,0.2
+Asparagus,20,2.2,3.9,0.1
+Artichoke,47,3.3,10.5,0.2
+Brussels Sprouts,43,3.4,9.0,0.3
+Leek,61,1.5,14.2,0.3
+Spring Onion (Scallion),32,1.8,7.3,0.2
+Garlic,149,6.4,33.1,0.5
+Ginger (Fresh),80,1.8,17.8,0.8
+Kohlrabi,27,1.7,6.2,0.1
+Radish (Red),16,0.7,3.4,0.1
+Daikon Radish (Mooli),18,0.6,4.1,0.1
+Parsnip,75,1.2,18.0,0.3
+Celery Root (Celeriac),42,1.5,9.2,0.3
+Fennel Bulb,31,1.2,7.3,0.2
+Bok Choy (Chinese Cabbage),13,1.5,2.2,0.2
+Napa Cabbage,16,1.2,3.2,0.2
+Red Cabbage,31,1.4,7.4,0.2
+Savoy Cabbage,27,2.0,6.1,0.1
+Green Capsicum (Bell Pepper),20,0.9,4.6,0.2
+Red Tomato (Regular),18,0.9,3.9,0.2
+Cherry Tomato,18,0.9,3.9,0.2
+Plum Tomato,18,0.9,3.9,0.2
+Heirloom Tomato,18,0.9,3.9,0.2
+Yellow Squash,16,1.2,3.4,0.2
+Butternut Squash,45,1.0,11.7,0.1
+Acorn Squash,40,0.8,10.4,0.1
+Spaghetti Squash,31,0.6,7.0,0.6
+Chayote (Chow Chow),19,0.8,4.5,0.1
+Ivy Gourd (Tindora),19,1.2,3.4,0.4
+Pointed Gourd (Parwal),20,2.0,2.6,0.3
+Apple Gourd (Tinda),18,1.4,2.5,0.8
+Sponge Gourd (Ghiya Turai),18,1.1,4.2,0.2
+Green Papaya (Raw),39,0.6,9.8,0.1
+Brinjal (Round),24,1.4,3.9,0.3
+Brinjal (Long),25,1.0,5.9,0.2
