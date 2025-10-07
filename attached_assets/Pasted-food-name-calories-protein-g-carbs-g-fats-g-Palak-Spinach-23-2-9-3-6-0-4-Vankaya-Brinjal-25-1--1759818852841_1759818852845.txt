@@ -1,0 +1,99 @@
+food_name,calories,protein_g,carbs_g,fats_g
+Palak (Spinach),23,2.9,3.6,0.4
+Vankaya (Brinjal),25,1.0,6.0,0.2
+Carrot (Gajjar),41,0.9,10.0,0.2
+Tomato (Tamatar),18,0.9,3.9,0.2
+Cucumber (Kheera),16,0.7,3.6,0.1
+Capsicum (Simla Mirch),31,1.0,6.0,0.3
+Onion (Pyaz),40,1.1,9.3,0.1
+Cauliflower (Gobi),25,1.9,5.0,0.3
+Cabbage (Patta Gobi),25,1.3,5.8,0.1
+Dosakai (Yellow Cucumber),16,0.7,3.5,0.1
+Potato (Aloo),77,2.0,17.5,0.1
+Bendakaya (Okra),33,1.9,7.5,0.2
+Green Chilli (Mirchi),40,1.9,8.8,0.4
+Sweet Potato (Shakarkandi),86,1.6,20.1,0.1
+Beetroot (Chukandar),43,1.6,9.6,0.2
+Pumpkin (Kaddu),26,1.0,6.5,0.1
+Bottle Gourd (Lauki),14,0.6,3.4,0.0
+Ridge Gourd (Turai),20,1.2,4.0,0.2
+Bitter Gourd (Karela),17,1.0,3.7,0.2
+Snake Gourd (Chichinda),18,0.5,4.0,0.2
+Pointed Gourd (Parwal),20,2.0,2.9,0.3
+Radish (Mooli),16,0.7,3.4,0.1
+White Radish (Mullangi),18,0.6,4.1,0.1
+Turnip (Shalgam),28,0.9,6.4,0.1
+Mushroom (Khumb),22,3.1,3.3,0.3
+Green Beans (Beans),31,1.8,7.0,0.2
+Cluster Beans (Guar),49,3.2,10.8,0.4
+Broad Beans (Sem),72,5.4,12.0,0.7
+French Beans,31,1.8,7.0,0.2
+Green Peas (Matar),81,5.4,14.5,0.4
+Corn (Makka),86,3.3,19.0,1.4
+Coriander Leaves (Dhania),23,2.1,3.7,0.5
+Mint Leaves (Pudina),70,3.8,14.9,0.9
+Curry Leaves (Kadi Patta),108,6.1,18.7,1.0
+Fenugreek Leaves (Methi),49,4.4,6.0,0.9
+Amaranth Leaves (Thotakura),23,2.5,4.0,0.3
+Colocasia Leaves (Arbi Patta),56,5.8,9.9,1.0
+Drumstick (Moringa),37,2.1,8.5,0.2
+Drumstick Leaves,64,9.4,12.5,1.7
+Ivy Gourd (Tindora),19,0.6,4.3,0.1
+Ash Gourd (Petha),13,0.4,3.0,0.2
+Red Pumpkin (Lal Kaddu),26,1.0,6.5,0.1
+Spring Onion (Hara Pyaz),32,1.8,7.3,0.2
+Garlic (Lehsun),149,6.4,33.1,0.5
+Ginger (Adrak),80,1.8,17.8,0.8
+Red Onion (Lal Pyaz),40,1.1,9.3,0.1
+White Onion (Safed Pyaz),40,1.1,9.3,0.1
+Shallots (Chinna Ullipaya),72,2.5,16.8,0.1
+Cherry Tomato,18,0.9,3.9,0.2
+Red Capsicum,31,1.0,6.0,0.3
+Yellow Capsicum,27,1.0,6.3,0.2
+Green Capsicum,20,0.9,4.6,0.2
+Chana (Chickpeas),164,8.9,27.4,2.6
+Rajma (Kidney Beans),127,8.7,22.8,0.5
+Kabuli Chana,164,8.9,27.4,2.6
+Kala Chana (Black Chickpeas),364,17.0,61.0,6.0
+Green Moong (Mung Beans),105,7.0,19.0,0.4
+Yellow Moong Dal,347,24.0,63.0,1.2
+Masoor Dal (Red Lentils),116,9.0,20.0,0.4
+Toor Dal (Pigeon Peas),335,22.0,62.0,1.5
+Urad Dal (Black Gram),341,25.0,59.0,1.6
+Chana Dal (Split Chickpeas),360,22.0,60.0,5.6
+Soybean,446,36.0,30.0,20.0
+Peanuts (Moongphali),567,25.8,16.1,49.2
+Baby Corn,86,3.3,19.0,1.4
+Coconut (Nariyal),354,3.3,15.2,33.5
+Raw Mango (Kairi),60,0.8,15.0,0.4
+Green Papaya,39,0.6,10.0,0.1
+Raw Banana (Kela),89,1.1,22.8,0.3
+Raw Jackfruit (Kathal),95,1.7,23.2,0.6
+Plantain Stem (Vazhapindi),20,0.5,4.5,0.1
+Banana Flower (Vazhaipoo),51,1.6,9.9,0.5
+Taro Root (Arbi),112,1.5,26.5,0.2
+Yam (Suran),118,1.5,27.9,0.2
+Elephant Foot Yam (Jimikand),118,1.5,27.9,0.2
+Lotus Root (Kamal Kakdi),74,2.6,17.2,0.1
+Lotus Stem (Nadru),74,2.6,17.2,0.1
+Water Chestnut (Singhara),97,1.4,23.9,0.1
+Sweet Corn (Meetha Makka),86,3.3,19.0,1.4
+Baby Potato,77,2.0,17.5,0.1
+Broccoli,34,2.8,7.0,0.4
+Zucchini,17,1.2,3.1,0.3
+Lettuce (Salad Patta),15,1.4,2.9,0.2
+Celery,14,0.7,3.0,0.2
+Leek,61,1.5,14.2,0.3
+Fennel (Saunf Bulb),31,1.2,7.3,0.2
+Chinese Cabbage,16,1.2,3.2,0.2
+Red Cabbage (Lal Patta Gobi),31,1.4,7.4,0.2
+Mustard Greens (Sarson Saag),27,2.9,4.7,0.4
+Bathua (Lamb's Quarters),43,4.2,7.3,0.8
+Baby Spinach (Choti Palak),23,2.9,3.6,0.4
+Basil (Tulsi),23,3.2,2.7,0.6
+Dill (Suva Bhaji),43,3.5,7.0,1.1
+Parsley (Ajmood),36,3.0,6.3,0.8
+Bay Leaf (Tej Patta),313,7.6,75.0,8.4
+Oregano,265,9.0,68.9,4.3
+Thyme,101,5.6,24.5,1.7
+Rosemary,131,3.3,20.7,5.9
