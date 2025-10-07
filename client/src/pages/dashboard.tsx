@@ -121,6 +121,12 @@ function DataEntryForm({ userId }: { userId: string }) {
   const [foodSearch, setFoodSearch] = useState("");
   const [foodResults, setFoodResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [selectedFoodId, setSelectedFoodId] = useState<number | null>(null);
+  const [selectedFoodNutritionPer100g, setSelectedFoodNutritionPer100g] = useState<any>(null);
+  
+  // Portion state
+  const [portions, setPortions] = useState<any[]>([]);
+  const [selectedPortion, setSelectedPortion] = useState("");
   
   // Search foods when user types
   useEffect(() => {
@@ -146,6 +152,13 @@ function DataEntryForm({ userId }: { userId: string }) {
   
   // Select food from search results
   const selectFood = (food: any) => {
+    setSelectedFoodId(food.id);
+    setSelectedFoodNutritionPer100g({
+      calories: food.calories,
+      protein_g: food.protein_g,
+      carbs_g: food.carbs_g,
+      fats_g: food.fats_g
+    });
     setMealData({
       ...mealData,
       foodItem: food.food_name,
@@ -156,6 +169,46 @@ function DataEntryForm({ userId }: { userId: string }) {
     });
     setFoodSearch(food.food_name);
     setShowResults(false);
+    setSelectedPortion("");
+  };
+  
+  // Fetch portions when food is selected
+  useEffect(() => {
+    const fetchPortions = async () => {
+      if (!selectedFoodId) {
+        setPortions([]);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/foods/${selectedFoodId}/portions`);
+        const data = await response.json();
+        setPortions(data.portions || []);
+      } catch (error) {
+        console.error("Fetch portions error:", error);
+        setPortions([]);
+      }
+    };
+    
+    fetchPortions();
+  }, [selectedFoodId]);
+  
+  // Calculate nutrition when portion is selected
+  const handlePortionChange = (portionId: string) => {
+    setSelectedPortion(portionId);
+    
+    const portion = portions.find(p => p.id.toString() === portionId);
+    if (!portion || !selectedFoodNutritionPer100g) return;
+    
+    const multiplier = portion.portion_grams / 100;
+    
+    setMealData({
+      ...mealData,
+      calories: Math.round(selectedFoodNutritionPer100g.calories * multiplier).toString(),
+      protein: (selectedFoodNutritionPer100g.protein_g * multiplier).toFixed(1),
+      carbs: (selectedFoodNutritionPer100g.carbs_g * multiplier).toFixed(1),
+      fats: (selectedFoodNutritionPer100g.fats_g * multiplier).toFixed(1)
+    });
   };
 
   // Exercise form state
@@ -235,6 +288,10 @@ function DataEntryForm({ userId }: { userId: string }) {
         case "meal":
           setMealData({ mealType: "", foodItem: "", calories: "", protein: "", carbs: "", fats: "" });
           setFoodSearch("");
+          setSelectedFoodId(null);
+          setSelectedFoodNutritionPer100g(null);
+          setPortions([]);
+          setSelectedPortion("");
           break;
         case "exercise":
           setExerciseData({ exerciseType: "", exerciseName: "", duration: "", caloriesBurned: "" });
@@ -391,6 +448,28 @@ function DataEntryForm({ userId }: { userId: string }) {
                 </div>
               )}
             </div>
+            
+            {/* Portion Size Selector */}
+            {portions.length > 0 && (
+              <div>
+                <Label htmlFor="portionSize">Portion Size</Label>
+                <Select 
+                  value={selectedPortion} 
+                  onValueChange={handlePortionChange}
+                >
+                  <SelectTrigger data-testid="select-portion-size">
+                    <SelectValue placeholder="Select portion (or keep 100g default)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {portions.map((portion) => (
+                      <SelectItem key={portion.id} value={portion.id.toString()}>
+                        {portion.portion_name} ({portion.portion_grams}g)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             
             {/* Selected Food Display */}
             {mealData.foodItem && (
