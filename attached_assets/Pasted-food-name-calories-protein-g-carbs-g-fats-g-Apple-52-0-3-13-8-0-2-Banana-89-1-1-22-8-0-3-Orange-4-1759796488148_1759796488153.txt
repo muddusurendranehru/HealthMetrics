@@ -1,0 +1,399 @@
+food_name,calories,protein_g,carbs_g,fats_g
+Apple,52,0.3,13.8,0.2
+Banana,89,1.1,22.8,0.3
+Orange,47,0.9,11.8,0.1
+Mango,60,0.8,15.0,0.4
+Papaya,43,0.5,10.8,0.3
+Guava,68,2.6,14.3,1.0
+Pomegranate,83,1.7,18.7,1.2
+Watermelon,30,0.6,7.6,0.2
+Grapes,69,0.7,18.1,0.2
+Pineapple,50,0.5,13.1,0.1
+Strawberry,32,0.7,7.7,0.3
+Blueberry,57,0.7,14.5,0.3
+Raspberry,52,1.2,11.9,0.7
+Blackberry,43,1.4,9.6,0.5
+Kiwi,61,1.1,14.7,0.5
+Pear,57,0.4,15.2,0.1
+Peach,39,0.9,9.5,0.3
+Plum,46,0.7,11.4,0.3
+Apricot,48,1.4,11.1,0.4
+Cherry,63,1.1,16.0,0.2
+Lychee,66,0.8,16.5,0.4
+Custard Apple (Sitaphal),94,1.7,23.6,0.6
+Sweet Lime (Mosambi),43,0.7,10.6,0.2
+Jamun (Black Plum),60,0.7,15.6,0.2
+Chikoo (Sapota),83,0.4,20.0,1.1
+Dragon Fruit,60,1.2,13.0,0.4
+Passion Fruit,97,2.2,23.4,0.7
+Fig (Anjeer),74,0.8,19.2,0.3
+Dates (Khajoor),282,2.5,75.0,0.4
+Raisins (Kishmish),299,3.1,79.2,0.5
+Coconut (Fresh),354,3.3,15.2,33.5
+Coconut Water,19,0.7,3.7,0.2
+Jackfruit,95,1.7,23.2,0.6
+Star Fruit (Kamrakh),31,1.0,6.7,0.3
+Wood Apple (Bael),49,1.8,11.1,0.2
+Amla (Indian Gooseberry),44,0.9,10.2,0.6
+Tamarind (Imli),239,2.8,62.5,0.6
+Mulberry,43,1.4,9.8,0.4
+Persimmon,70,0.6,18.6,0.2
+Avocado,160,2.0,8.5,14.7
+Lemon,29,1.1,9.3,0.3
+Lime,30,0.7,10.5,0.2
+Grapefruit,42,0.8,10.7,0.1
+Cantaloupe (Muskmelon),34,0.8,8.2,0.2
+Honeydew Melon,36,0.5,9.1,0.1
+Potato,77,2.0,17.5,0.1
+Sweet Potato,86,1.6,20.1,0.1
+Carrot,41,0.9,9.6,0.2
+Beetroot,43,1.6,9.6,0.2
+Radish,16,0.7,3.4,0.1
+Turnip,28,0.9,6.4,0.1
+Onion,40,1.1,9.3,0.1
+Tomato,18,0.9,3.9,0.2
+Cucumber,15,0.7,3.6,0.1
+Bottle Gourd (Lauki),14,0.6,3.4,0.0
+Ridge Gourd (Turai),20,1.2,4.4,0.2
+Bitter Gourd (Karela),17,1.0,3.7,0.2
+Ash Gourd (Petha),13,0.4,3.0,0.1
+Snake Gourd (Chichinda),18,0.5,4.2,0.2
+Pumpkin,26,1.0,6.5,0.1
+Zucchini,17,1.2,3.1,0.3
+Bell Pepper (Capsicum),26,1.0,6.0,0.3
+Green Chilli,40,2.0,8.8,0.2
+Eggplant (Baingan),25,1.0,5.9,0.2
+Okra (Bhindi),33,1.9,7.0,0.2
+Cabbage,25,1.3,5.8,0.1
+Cauliflower,25,1.9,5.0,0.3
+Broccoli,34,2.8,7.0,0.4
+Spinach (Palak),23,2.9,3.6,0.4
+Fenugreek Leaves (Methi),49,4.4,6.0,0.9
+Amaranth Leaves (Chaulai),23,2.5,4.0,0.4
+Mustard Greens (Sarson),27,2.9,4.7,0.4
+Coriander Leaves,23,2.1,3.7,0.5
+Mint Leaves,44,3.8,8.4,0.7
+Curry Leaves,108,6.1,18.7,1.0
+Drumstick (Moringa),37,2.1,8.5,0.2
+Drumstick Leaves (Moringa),64,9.4,8.3,1.4
+Cluster Beans (Guar),16,3.2,3.2,0.1
+French Beans,31,1.8,7.0,0.2
+Broad Beans (Sem),88,7.9,17.6,0.4
+Green Peas,81,5.4,14.5,0.4
+Mushroom,22,3.1,3.3,0.3
+Baby Corn,23,2.0,4.6,0.3
+Corn (Sweet Corn),86,3.3,18.7,1.4
+Jackfruit (Raw),95,1.7,23.2,0.6
+Banana Flower,51,1.6,9.9,0.5
+Lotus Root,74,2.6,17.2,0.1
+Yam (Suran),118,1.5,27.9,0.2
+Arbi (Taro Root),112,1.5,26.5,0.2
+Raw Banana (Plantain),122,1.3,31.9,0.4
+Coconut Malai,354,3.3,15.2,33.5
+Toor Dal (Pigeon Pea),335,22.3,62.8,1.5
+Moong Dal (Green Gram),347,24.5,63.0,1.2
+Masoor Dal (Red Lentil),353,25.8,60.1,1.1
+Chana Dal (Bengal Gram),372,22.5,60.9,5.3
+Urad Dal (Black Gram),341,25.2,58.9,1.6
+Rajma (Kidney Beans),333,22.5,60.0,0.8
+Kala Chana (Black Chickpea),364,17.1,60.9,5.2
+Kabuli Chana (Chickpea),364,19.3,60.7,6.0
+Lobia (Black Eyed Peas),336,23.5,60.0,1.3
+Green Moong Whole,334,23.9,62.6,1.3
+Matki (Moth Beans),343,22.9,61.5,1.6
+Kulthi Dal (Horse Gram),321,22.0,57.2,0.5
+Soybean,446,36.5,30.2,19.9
+Peanuts,567,25.8,16.1,49.2
+Cashew,553,18.2,30.2,43.9
+Almonds,579,21.2,21.6,49.9
+Walnuts,654,15.2,13.7,65.2
+Pistachios,560,20.2,27.2,45.3
+Raisins (Dried),299,3.1,79.2,0.5
+Dates (Dried),282,2.5,75.0,0.4
+Fig (Dried Anjeer),249,3.3,63.9,0.9
+Apricot (Dried),241,3.4,62.6,0.5
+Prunes (Dried Plum),240,2.2,63.9,0.4
+Flax Seeds,534,18.3,28.9,42.2
+Chia Seeds,486,16.5,42.1,30.7
+Sunflower Seeds,584,20.8,20.0,51.5
+Pumpkin Seeds,559,30.2,10.7,49.1
+Sesame Seeds (Til),573,17.7,23.4,49.7
+Melon Seeds,557,28.5,15.3,47.4
+Watermelon Seeds,557,28.3,15.3,47.4
+Chicken Breast (Raw),165,31.0,0.0,3.6
+Chicken Thigh (Raw),209,26.0,0.0,10.9
+Chicken Drumstick (Raw),172,28.3,0.0,5.7
+Chicken Wings (Raw),203,30.5,0.0,8.1
+Chicken Curry (with Gravy),150,18.0,5.0,6.5
+Chicken Tandoori,148,27.0,2.0,3.0
+Chicken Biryani,163,12.0,18.0,5.0
+Chicken Tikka,150,26.0,3.0,3.5
+Butter Chicken,180,14.0,8.0,10.0
+Chicken Korma,185,15.0,7.0,11.0
+Chicken 65,250,20.0,10.0,14.0
+Mutton Curry,210,18.0,5.0,13.0
+Mutton Biryani,200,15.0,20.0,8.0
+Mutton Keema,175,20.0,4.0,8.5
+Mutton Rogan Josh,195,17.0,6.0,11.0
+Lamb Chops,282,25.0,0.0,19.8
+Goat Meat (Raw),143,27.0,0.0,3.0
+Fish (Rohu),97,16.6,0.0,3.0
+Fish (Katla),105,17.0,0.0,3.5
+Fish (Hilsa),310,18.0,0.0,25.0
+Pomfret,96,19.0,0.0,1.5
+Salmon,208,20.0,0.0,13.4
+Tuna,130,29.0,0.0,0.9
+Mackerel,205,18.6,0.0,13.9
+Sardine,208,24.6,0.0,11.5
+Tilapia,96,20.1,0.0,1.7
+Prawns,99,24.0,0.2,0.3
+Shrimp,106,20.3,1.0,1.7
+Crab,97,19.4,0.0,1.3
+Lobster,89,19.0,0.0,0.9
+Fish Curry,120,15.0,5.0,4.5
+Fish Fry,180,18.0,8.0,9.0
+Fish Tikka,130,22.0,3.0,3.5
+Egg Whole (Boiled),155,13.0,1.1,10.6
+Egg White,52,11.0,0.7,0.2
+Egg Yolk,322,15.9,3.6,26.5
+Egg Omelette,154,10.6,1.0,11.5
+Scrambled Egg,148,10.0,1.5,10.8
+Egg Bhurji,120,9.0,4.0,7.5
+Egg Curry,130,11.0,6.0,7.0
+Boiled Egg White Only,52,11.0,0.7,0.2
+Full Cream Milk,60,3.2,4.8,3.3
+Toned Milk,58,3.0,4.8,3.0
+Double Toned Milk,52,3.4,5.0,1.5
+Skimmed Milk,34,3.4,5.0,0.1
+Buffalo Milk,97,3.7,5.2,6.9
+Curd (Full Fat),60,3.5,4.7,3.0
+Curd (Low Fat),56,3.3,4.8,1.5
+Yogurt (Plain),59,3.5,4.7,3.3
+Greek Yogurt,97,9.0,3.9,5.0
+Buttermilk,40,3.1,4.8,0.9
+Paneer (Cottage Cheese),265,18.3,1.2,20.8
+Cheese (Cheddar),402,25.0,1.3,33.1
+Cheese (Mozzarella),280,28.0,3.1,17.1
+Cheese Slice,300,20.0,4.0,23.0
+Cream,345,2.2,2.8,36.1
+Butter,717,0.9,0.1,81.1
+Ghee,900,0.0,0.0,99.8
+Khoya (Mawa),315,15.0,25.0,18.0
+Condensed Milk,321,7.9,54.4,8.7
+Bread (White),265,9.0,49.0,3.2
+Bread (Brown),246,12.5,41.4,3.5
+Whole Wheat Bread,247,13.0,41.0,3.4
+Multigrain Bread,265,13.4,43.3,4.2
+Roti (Chapati),71,3.0,15.0,0.4
+Paratha (Plain),126,3.0,18.0,4.5
+Naan,262,8.7,45.2,4.6
+Kulcha,275,8.0,50.0,4.0
+Puri,501,6.4,43.7,32.0
+Bhakri,250,8.0,48.0,2.5
+Thepla,180,4.5,28.0,5.5
+Dosa (Plain),86,2.0,17.6,0.5
+Idli,78,2.0,17.0,0.2
+Vada,185,4.5,22.0,9.0
+Upma,78,2.0,14.0,1.5
+Poha,130,2.5,27.0,0.5
+Dhokla,160,4.0,29.0,3.0
+Khandvi,150,5.0,20.0,5.5
+Pongal,110,3.5,18.0,2.5
+Uttapam,95,2.5,16.0,2.0
+Medu Vada,185,4.5,22.0,9.0
+Appam,120,1.5,24.0,1.0
+Puttu,130,2.0,28.0,0.5
+Idiyappam,160,3.0,35.0,0.3
+Pesarattu,95,4.0,16.0,1.5
+Rava Dosa,150,3.0,25.0,3.5
+Masala Dosa,165,4.0,28.0,4.0
+Sambar,60,3.0,10.0,1.5
+Rasam,30,1.0,5.0,0.5
+Dal Tadka,105,6.5,17.0,1.5
+Dal Fry,110,7.0,16.5,2.0
+Dal Makhani,140,8.0,15.0,5.5
+Rajma Masala,135,8.0,20.0,2.5
+Chole Masala,140,7.0,21.0,3.5
+Aloo Gobi,95,2.8,18.0,2.0
+Bhindi Masala,35,1.9,6.9,0.2
+Palak Paneer,165,11.0,8.5,10.5
+Paneer Butter Masala,210,12.0,10.0,14.0
+Kadai Paneer,195,10.0,9.0,13.5
+Shahi Paneer,200,11.0,11.0,13.0
+Matar Paneer,150,9.0,12.0,8.0
+Paneer Tikka,180,15.0,5.0,11.0
+Malai Kofta,220,7.0,15.0,15.0
+Dum Aloo,140,3.0,20.0,5.5
+Aloo Matar,110,4.0,18.0,2.5
+Baingan Bharta,85,2.5,12.0,3.5
+Kadhi,58,2.4,8.5,1.5
+Kofta Curry,180,8.0,12.0,11.0
+Mix Veg Curry,90,3.0,14.0,2.5
+Veg Korma,130,4.0,16.0,5.5
+Navratan Korma,145,5.0,17.0,6.5
+Methi Malai Matar,125,6.0,12.0,5.5
+Sarson Ka Saag,105,5.0,8.0,6.0
+Lauki Chana Dal,80,5.0,12.0,1.5
+Turai Dal,75,4.5,11.0,1.0
+Kaddu Sabzi,65,2.0,12.0,1.0
+Sem Phali Sabzi,90,6.0,14.0,1.5
+Mushroom Masala,80,4.0,9.0,3.5
+Corn Masala,100,4.0,16.0,2.0
+Baby Corn Masala,95,3.5,15.0,2.5
+Capsicum Sabzi,70,2.5,11.0,2.0
+Cabbage Poriyal,55,2.0,9.0,1.5
+Beans Poriyal,60,3.0,10.0,1.0
+Carrot Peas,85,3.5,15.0,1.5
+Beetroot Poriyal,60,2.5,11.0,1.0
+Cucumber Raita,45,2.5,5.0,1.5
+Boondi Raita,80,3.0,10.0,3.0
+Mix Veg Raita,50,2.8,6.0,1.8
+Onion Raita,48,2.0,6.5,1.5
+Tomato Raita,42,2.2,5.5,1.3
+Pineapple Raita,65,2.0,11.0,1.5
+Pomegranate Raita,70,2.5,12.0,1.5
+Vegetable Biryani,150,4.0,28.0,3.0
+Veg Pulao,140,3.5,26.0,2.5
+Jeera Rice,142,3.0,28.0,2.0
+Lemon Rice,160,2.5,32.0,2.5
+Curd Rice,115,3.0,21.0,2.0
+Tamarind Rice,155,2.0,31.0,2.5
+Coconut Rice,180,3.0,33.0,4.0
+Tomato Rice,145,2.5,29.0,2.0
+Veg Fried Rice,170,4.0,30.0,3.5
+Schezwan Rice,185,4.5,32.0,4.0
+Veg Noodles,150,5.0,26.0,3.0
+Hakka Noodles,175,5.5,29.0,4.0
+Chow Mein,180,6.0,28.0,4.5
+Manchurian (Dry),140,4.0,18.0,5.5
+Manchurian (Gravy),165,5.0,22.0,6.0
+Spring Roll,185,5.5,25.0,6.5
+Momos (Steamed),105,4.5,16.0,2.5
+Momos (Fried),195,5.0,22.0,9.0
+Paneer Momos,125,6.0,15.0,4.5
+Veg Momos,100,3.8,16.5,2.0
+Soup (Tomato),38,1.2,7.5,0.6
+Soup (Sweet Corn),65,2.5,12.0,1.0
+Soup (Hot & Sour),55,2.0,10.0,1.2
+Soup (Manchow),70,2.8,11.0,1.8
+Soup (Clear Veg),25,1.0,5.0,0.3
+Soup (Lentil),80,5.0,13.0,0.8
+Soup (Chicken),85,8.0,6.0,3.0
+Soup (Mushroom),50,2.5,8.0,1.5
+Salad (Green),25,1.5,4.5,0.3
+Salad (Cucumber Tomato),20,0.8,4.0,0.2
+Salad (Carrot Beetroot),35,1.0,7.5,0.2
+Salad (Sprout),110,8.5,18.0,1.5
+Salad (Fruit),55,0.8,13.0,0.3
+Salad (Greek),120,4.5,8.0,8.0
+Salad (Caesar),180,8.0,12.0,11.0
+Coleslaw,85,1.5,10.0,4.5
+Russian Salad,145,3.5,18.0,6.5
+Chana Chaat,120,6.0,20.0,2.0
+Bhel Puri,170,4.5,30.0,3.5
+Sev Puri,200,4.0,28.0,7.5
+Dahi Puri,140,4.5,22.0,4.0
+Pani Puri,120,3.0,24.0,2.0
+Aloo Tikki,180,3.5,25.0,7.0
+Samosa,252,5.0,27.0,14.0
+Kachori,280,6.0,30.0,15.0
+Pakora (Mix Veg),245,5.5,25.0,14.0
+Onion Pakora,250,5.0,26.0,14.5
+Paneer Pakora,230,10.0,18.0,13.0
+Bread Pakora,265,7.0,32.0,12.0
+Cutlet (Veg),175,4.5,22.0,7.5
+Cutlet (Chicken),195,12.0,15.0,9.5
+Vada Pav,267,6.5,36.0,10.5
+Pav Bhaji,135,4.0,20.0,4.5
+Misal Pav,180,7.0,28.0,4.0
+Dabeli,210,4.5,32.0,7.0
+Frankie (Veg),245,6.0,38.0,7.5
+Frankie (Paneer),285,10.0,36.0,11.0
+Kathi Roll (Veg),260,7.0,35.0,9.5
+Kathi Roll (Chicken),295,15.0,32.0,11.5
+Paneer Roll,300,12.0,34.0,12.5
+Egg Roll,275,13.0,30.0,11.0
+Seekh Kebab,220,18.0,4.0,15.0
+Chicken Kebab,185,22.0,3.0,9.0
+Paneer Tikka Masala,200,11.0,10.0,13.5
+Tandoori Chicken,148,27.0,2.0,3.0
+Tandoori Roti,120,4.0,23.0,1.5
+Butter Naan,310,9.0,52.0,7.5
+Garlic Naan,330,9.5,53.0,8.5
+Cheese Naan,380,12.0,50.0,14.0
+Keema Naan,350,15.0,48.0,11.0
+Aloo Paratha,250,5.5,35.0,9.5
+Gobhi Paratha,230,5.0,32.0,8.5
+Mooli Paratha,220,4.8,30.0,8.0
+Paneer Paratha,280,9.0,33.0,12.0
+Methi Paratha,180,5.2,28.0,6.5
+Laccha Paratha,300,6.0,42.0,12.0
+Kulcha (Butter),290,8.5,48.0,7.5
+Kulcha (Amritsari),320,9.0,51.0,9.0
+Baingan Raita,55,2.5,7.5,2.0
+Lauki Raita,45,2.2,6.0,1.5
+Beetroot Raita,58,2.6,9.0,1.6
+Carrot Raita,52,2.4,7.5,1.7
+Mint Raita,48,2.5,6.5,1.5
+Jeera Aloo,125,2.5,20.0,4.0
+Aloo Bhindi,90,2.8,15.0,2.5
+Aloo Palak,105,4.0,16.0,3.0
+Aloo Capsicum,95,2.5,16.5,2.5
+Tomato Sabzi,55,1.8,10.0,1.5
+Gajar Matar,95,4.0,16.0,1.8
+Hari Mirch Sabzi,60,2.5,11.0,1.2
+Karela Fry,85,2.5,12.0,3.5
+Arbi Fry,165,2.8,28.0,5.0
+Suran Sabzi,140,2.0,30.0,2.5
+Tinda Sabzi,70,2.0,12.0,1.5
+Parwal Sabzi,80,2.5,14.0,1.5
+Lauki Kofta,165,5.5,18.0,8.0
+Cabbage Kofta,180,6.0,20.0,8.5
+Methi Thepla,180,4.5,28.0,5.5
+Bajra Roti,97,3.0,18.0,1.5
+Jowar Roti,87,2.5,17.0,1.0
+Makki Roti,240,6.0,44.0,4.5
+Ragi Roti,120,3.5,22.0,2.0
+Nachni Bhakri,135,4.0,24.0,2.5
+Wheat Dalia (Broken Wheat),360,12.0,72.0,1.8
+Oats,389,16.9,66.3,6.9
+Quinoa,368,14.1,64.2,6.1
+Cornflakes,357,7.5,84.0,0.4
+Muesli,352,9.7,66.0,5.8
+Granola,471,13.7,64.0,20.0
+Semolina (Suji),360,12.7,72.8,1.0
+Besan (Gram Flour),387,22.4,57.8,6.7
+Maida (All Purpose),364,10.3,76.3,1.0
+Atta (Whole Wheat),340,12.0,69.4,1.7
+Rice Flour,366,6.0,80.1,1.4
+Ragi Flour,328,7.3,72.0,1.3
+Bajra Flour,361,11.6,67.5,5.0
+Jowar Flour,349,10.4,70.7,3.3
+Coconut Oil,884,0.0,0.0,100.0
+Olive Oil,884,0.0,0.0,100.0
+Mustard Oil,884,0.0,0.0,100.0
+Sunflower Oil,884,0.0,0.0,100.0
+Groundnut Oil,884,0.0,0.0,100.0
+Sesame Oil,884,0.0,0.0,100.0
+Rice Bran Oil,884,0.0,0.0,100.0
+Sugar (White),387,0.0,99.8,0.0
+Jaggery (Gur),383,0.4,97.3,0.1
+Honey,304,0.3,82.4,0.0
+Brown Sugar,380,0.1,98.1,0.0
+Stevia,0,0.0,0.0,0.0
+Tea (Without Sugar),1,0.0,0.3,0.0
+Coffee (Without Sugar),2,0.1,0.0,0.0
+Green Tea,1,0.0,0.0,0.0
+Herbal Tea,1,0.0,0.2,0.0
+Coconut Chutney,145,2.0,8.0,12.0
+Tomato Chutney,80,1.5,12.0,3.0
+Mint Chutney,35,1.0,6.0,1.0
+Coriander Chutney,40,1.2,6.5,1.2
+Tamarind Chutney,120,0.8,29.0,0.5
+Peanut Chutney,180,6.0,12.0,12.5
+Garlic Chutney,90,2.0,10.0,5.0
+Pickle (Mango),135,1.0,16.0,7.5
+Pickle (Lime),120,0.8,14.0,7.0
+Pickle (Mixed Veg),125,1.2,15.0,7.2
+Papad (Roasted),314,17.5,50.0,3.5
+Papad (Fried),428,18.0,48.0,20.0
