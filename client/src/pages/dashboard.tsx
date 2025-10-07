@@ -139,6 +139,8 @@ function DataEntryForm({ userId }: { userId: string }) {
       try {
         const response = await fetch(`/api/foods/search?q=${encodeURIComponent(foodSearch)}`);
         const data = await response.json();
+        console.log("🔍 Food search results:", data.foods?.length || 0, "foods found");
+        console.log("📸 First food image_url:", data.foods?.[0]?.image_url);
         setFoodResults(data.foods || []);
         setShowResults(true);
       } catch (error) {
