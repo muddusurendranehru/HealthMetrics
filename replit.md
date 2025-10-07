@@ -34,6 +34,8 @@ Preferred communication style: Simple, everyday language.
 ## Database Schema
 The PostgreSQL database includes the following core entities:
 - **Users**: Authentication and profile information
+- **Food Nutrition Database**: 1,027 Indian foods with complete nutrition data per 100g (calories, protein, carbs, fats)
+- **Portion Sizes**: 175 portion measurements for 56 foods (katori, handfuls, pieces, cups, grams)
 - **Meals**: Food logging with nutritional data (calories, protein, carbs, fat)
 - **Exercises**: Workout tracking with duration and calories burned
 - **Sleep Records**: Sleep quality and duration monitoring
