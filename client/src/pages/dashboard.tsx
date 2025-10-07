@@ -439,17 +439,25 @@ function DataEntryForm({ userId }: { userId: string }) {
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 flex items-center gap-3"
                       data-testid={`food-result-${food.id}`}
                     >
-                      {food.image_url && (
-                        <img 
-                          src={food.image_url} 
-                          alt={food.food_name}
-                          className="w-12 h-12 object-cover rounded-md flex-shrink-0"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://via.placeholder.com/48/4CAF50/ffffff?text=Food';
-                          }}
-                        />
-                      )}
+                      <div className="w-12 h-12 flex-shrink-0 rounded-md bg-green-100 dark:bg-green-900/30 flex items-center justify-center overflow-hidden">
+                        {food.image_url ? (
+                          <img 
+                            src={food.image_url} 
+                            alt={food.food_name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            onError={(e) => {
+                              const target = e.currentTarget as HTMLImageElement;
+                              target.style.display = 'none';
+                              target.parentElement!.innerHTML = '<svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>';
+                            }}
+                          />
+                        ) : (
+                          <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                        )}
+                      </div>
                       <div className="flex-1">
                         <div className="font-medium text-gray-900 dark:text-white">{food.food_name}</div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
