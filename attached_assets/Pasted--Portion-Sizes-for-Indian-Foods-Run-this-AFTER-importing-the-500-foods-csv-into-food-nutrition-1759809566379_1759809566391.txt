@@ -1,0 +1,360 @@
+-- Portion Sizes for Indian Foods
+-- Run this AFTER importing the 500_foods.csv into food_nutrition table
+-- This uses food names to find the food_id automatically
+
+-- FRUITS (Individual pieces and cups)
+-- Apples
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small apple', 80 FROM food_nutrition WHERE food_name = 'Apple'
+UNION ALL SELECT id, '1 medium apple', 120 FROM food_nutrition WHERE food_name = 'Apple'
+UNION ALL SELECT id, '1 large apple', 180 FROM food_nutrition WHERE food_name = 'Apple'
+UNION ALL SELECT id, '1 cup chopped', 125 FROM food_nutrition WHERE food_name = 'Apple';
+
+-- Bananas
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small banana', 90 FROM food_nutrition WHERE food_name = 'Banana'
+UNION ALL SELECT id, '1 medium banana', 118 FROM food_nutrition WHERE food_name = 'Banana'
+UNION ALL SELECT id, '1 large banana', 136 FROM food_nutrition WHERE food_name = 'Banana';
+
+-- Oranges
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small orange', 96 FROM food_nutrition WHERE food_name = 'Orange'
+UNION ALL SELECT id, '1 medium orange', 131 FROM food_nutrition WHERE food_name = 'Orange'
+UNION ALL SELECT id, '1 large orange', 184 FROM food_nutrition WHERE food_name = 'Orange';
+
+-- Mangoes
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small mango', 150 FROM food_nutrition WHERE food_name = 'Mango'
+UNION ALL SELECT id, '1 medium mango', 200 FROM food_nutrition WHERE food_name = 'Mango'
+UNION ALL SELECT id, '1 large mango', 300 FROM food_nutrition WHERE food_name = 'Mango'
+UNION ALL SELECT id, '1 cup sliced', 165 FROM food_nutrition WHERE food_name = 'Mango';
+
+-- Papayas
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 cup cubed', 140 FROM food_nutrition WHERE food_name = 'Papaya'
+UNION ALL SELECT id, '1 medium slice', 150 FROM food_nutrition WHERE food_name = 'Papaya';
+
+-- Guavas
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small guava', 55 FROM food_nutrition WHERE food_name = 'Guava'
+UNION ALL SELECT id, '1 medium guava', 90 FROM food_nutrition WHERE food_name = 'Guava';
+
+-- Pomegranates
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 medium pomegranate', 282 FROM food_nutrition WHERE food_name = 'Pomegranate'
+UNION ALL SELECT id, '1 cup arils', 174 FROM food_nutrition WHERE food_name = 'Pomegranate';
+
+-- Watermelon
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 cup cubed', 152 FROM food_nutrition WHERE food_name = 'Watermelon'
+UNION ALL SELECT id, '1 medium slice', 286 FROM food_nutrition WHERE food_name = 'Watermelon';
+
+-- Grapes
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 handful', 80 FROM food_nutrition WHERE food_name = 'Grapes'
+UNION ALL SELECT id, '1 cup', 151 FROM food_nutrition WHERE food_name = 'Grapes';
+
+-- Pineapple
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 cup chunks', 165 FROM food_nutrition WHERE food_name = 'Pineapple'
+UNION ALL SELECT id, '1 ring/slice', 84 FROM food_nutrition WHERE food_name = 'Pineapple';
+
+-- VEGETABLES (Katori and cup measurements)
+-- Potatoes
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small potato', 92 FROM food_nutrition WHERE food_name = 'Potato'
+UNION ALL SELECT id, '1 medium potato', 150 FROM food_nutrition WHERE food_name = 'Potato'
+UNION ALL SELECT id, '1 large potato', 213 FROM food_nutrition WHERE food_name = 'Potato';
+
+-- Sweet Potatoes
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small sweet potato', 90 FROM food_nutrition WHERE food_name = 'Sweet Potato'
+UNION ALL SELECT id, '1 medium sweet potato', 130 FROM food_nutrition WHERE food_name = 'Sweet Potato';
+
+-- Carrots
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small carrot', 50 FROM food_nutrition WHERE food_name = 'Carrot'
+UNION ALL SELECT id, '1 medium carrot', 61 FROM food_nutrition WHERE food_name = 'Carrot'
+UNION ALL SELECT id, '1 cup chopped', 128 FROM food_nutrition WHERE food_name = 'Carrot';
+
+-- Tomatoes
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small tomato', 91 FROM food_nutrition WHERE food_name = 'Tomato'
+UNION ALL SELECT id, '1 medium tomato', 123 FROM food_nutrition WHERE food_name = 'Tomato'
+UNION ALL SELECT id, '1 cup chopped', 180 FROM food_nutrition WHERE food_name = 'Tomato';
+
+-- Onions
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small onion', 70 FROM food_nutrition WHERE food_name = 'Onion'
+UNION ALL SELECT id, '1 medium onion', 110 FROM food_nutrition WHERE food_name = 'Onion'
+UNION ALL SELECT id, '1 cup chopped', 160 FROM food_nutrition WHERE food_name = 'Onion';
+
+-- Cucumbers
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small cucumber', 150 FROM food_nutrition WHERE food_name = 'Cucumber'
+UNION ALL SELECT id, '1 medium cucumber', 200 FROM food_nutrition WHERE food_name = 'Cucumber'
+UNION ALL SELECT id, '1 cup sliced', 119 FROM food_nutrition WHERE food_name = 'Cucumber';
+
+-- LEAFY GREENS (Bunch/set measurements)
+-- Spinach
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 bunch/set', 200 FROM food_nutrition WHERE food_name = 'Spinach (Palak)'
+UNION ALL SELECT id, '1 cup cooked', 180 FROM food_nutrition WHERE food_name = 'Spinach (Palak)'
+UNION ALL SELECT id, '1 handful raw', 30 FROM food_nutrition WHERE food_name = 'Spinach (Palak)';
+
+-- Fenugreek Leaves
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 bunch/set', 200 FROM food_nutrition WHERE food_name = 'Fenugreek Leaves (Methi)'
+UNION ALL SELECT id, '1 cup chopped', 100 FROM food_nutrition WHERE food_name = 'Fenugreek Leaves (Methi)';
+
+-- DALS & LEGUMES (Katori measurements for cooked dal)
+-- Toor Dal
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Toor Dal (Pigeon Pea)'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Toor Dal (Pigeon Pea)'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Toor Dal (Pigeon Pea)'
+UNION ALL SELECT id, '250g (1 cup)', 250 FROM food_nutrition WHERE food_name = 'Toor Dal (Pigeon Pea)';
+
+-- Moong Dal
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Moong Dal (Green Gram)'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Moong Dal (Green Gram)'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Moong Dal (Green Gram)'
+UNION ALL SELECT id, '250g (1 cup)', 250 FROM food_nutrition WHERE food_name = 'Moong Dal (Green Gram)';
+
+-- Masoor Dal
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Masoor Dal (Red Lentil)'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Masoor Dal (Red Lentil)'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Masoor Dal (Red Lentil)'
+UNION ALL SELECT id, '250g (1 cup)', 250 FROM food_nutrition WHERE food_name = 'Masoor Dal (Red Lentil)';
+
+-- Chana Dal
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Chana Dal (Bengal Gram)'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Chana Dal (Bengal Gram)'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Chana Dal (Bengal Gram)'
+UNION ALL SELECT id, '250g (1 cup)', 250 FROM food_nutrition WHERE food_name = 'Chana Dal (Bengal Gram)';
+
+-- Rajma
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Rajma (Kidney Beans)'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Rajma (Kidney Beans)'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Rajma (Kidney Beans)'
+UNION ALL SELECT id, '250g (1 cup)', 250 FROM food_nutrition WHERE food_name = 'Rajma (Kidney Beans)';
+
+-- Chole
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Kabuli Chana (Chickpea)'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Kabuli Chana (Chickpea)'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Kabuli Chana (Chickpea)'
+UNION ALL SELECT id, '250g (1 cup)', 250 FROM food_nutrition WHERE food_name = 'Kabuli Chana (Chickpea)';
+
+-- NUTS & SEEDS (Handful measurements)
+-- Peanuts
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small handful', 20 FROM food_nutrition WHERE food_name = 'Peanuts'
+UNION ALL SELECT id, '1 handful', 30 FROM food_nutrition WHERE food_name = 'Peanuts'
+UNION ALL SELECT id, '2 handfuls', 60 FROM food_nutrition WHERE food_name = 'Peanuts';
+
+-- Almonds
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '5 almonds', 6 FROM food_nutrition WHERE food_name = 'Almonds'
+UNION ALL SELECT id, '10 almonds', 12 FROM food_nutrition WHERE food_name = 'Almonds'
+UNION ALL SELECT id, '1 handful (20 pieces)', 24 FROM food_nutrition WHERE food_name = 'Almonds'
+UNION ALL SELECT id, '30g portion', 30 FROM food_nutrition WHERE food_name = 'Almonds';
+
+-- Cashews
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '5 cashews', 7 FROM food_nutrition WHERE food_name = 'Cashew'
+UNION ALL SELECT id, '10 cashews', 14 FROM food_nutrition WHERE food_name = 'Cashew'
+UNION ALL SELECT id, '1 handful (15 pieces)', 21 FROM food_nutrition WHERE food_name = 'Cashew'
+UNION ALL SELECT id, '30g portion', 30 FROM food_nutrition WHERE food_name = 'Cashew';
+
+-- Walnuts
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '4 walnut halves', 14 FROM food_nutrition WHERE food_name = 'Walnuts'
+UNION ALL SELECT id, '7 walnut halves', 25 FROM food_nutrition WHERE food_name = 'Walnuts'
+UNION ALL SELECT id, '1 handful', 30 FROM food_nutrition WHERE food_name = 'Walnuts';
+
+-- CHICKEN (Pieces and portions)
+-- Chicken Breast
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small piece', 75 FROM food_nutrition WHERE food_name = 'Chicken Breast (Raw)'
+UNION ALL SELECT id, '1 medium piece', 120 FROM food_nutrition WHERE food_name = 'Chicken Breast (Raw)'
+UNION ALL SELECT id, '1 large piece', 180 FROM food_nutrition WHERE food_name = 'Chicken Breast (Raw)'
+UNION ALL SELECT id, '250g (quarter kg)', 250 FROM food_nutrition WHERE food_name = 'Chicken Breast (Raw)';
+
+-- Chicken Curry
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Chicken Curry (with Gravy)'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Chicken Curry (with Gravy)'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Chicken Curry (with Gravy)'
+UNION ALL SELECT id, '250g', 250 FROM food_nutrition WHERE food_name = 'Chicken Curry (with Gravy)';
+
+-- Tandoori Chicken
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 quarter', 125 FROM food_nutrition WHERE food_name = 'Chicken Tandoori'
+UNION ALL SELECT id, '1 half', 250 FROM food_nutrition WHERE food_name = 'Chicken Tandoori'
+UNION ALL SELECT id, '2 pieces', 200 FROM food_nutrition WHERE food_name = 'Chicken Tandoori';
+
+-- MUTTON (Pieces and portions)
+-- Mutton Curry
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '2 small pieces', 100 FROM food_nutrition WHERE food_name = 'Mutton Curry'
+UNION ALL SELECT id, '3-4 medium pieces', 150 FROM food_nutrition WHERE food_name = 'Mutton Curry'
+UNION ALL SELECT id, '250g (quarter kg)', 250 FROM food_nutrition WHERE food_name = 'Mutton Curry';
+
+-- FISH (Pieces and portions)
+-- Fish (Rohu)
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small piece', 75 FROM food_nutrition WHERE food_name = 'Fish (Rohu)'
+UNION ALL SELECT id, '1 medium piece', 125 FROM food_nutrition WHERE food_name = 'Fish (Rohu)'
+UNION ALL SELECT id, '250g (quarter kg)', 250 FROM food_nutrition WHERE food_name = 'Fish (Rohu)';
+
+-- Fish Curry
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Fish Curry'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Fish Curry'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Fish Curry';
+
+-- Prawns
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '5-6 medium prawns', 100 FROM food_nutrition WHERE food_name = 'Prawns'
+UNION ALL SELECT id, '8-10 medium prawns', 150 FROM food_nutrition WHERE food_name = 'Prawns'
+UNION ALL SELECT id, '250g', 250 FROM food_nutrition WHERE food_name = 'Prawns';
+
+-- EGGS (Number of eggs)
+-- Whole Egg
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 egg', 50 FROM food_nutrition WHERE food_name = 'Egg Whole (Boiled)'
+UNION ALL SELECT id, '2 eggs', 100 FROM food_nutrition WHERE food_name = 'Egg Whole (Boiled)'
+UNION ALL SELECT id, '3 eggs', 150 FROM food_nutrition WHERE food_name = 'Egg Whole (Boiled)';
+
+-- Egg White
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 egg white', 33 FROM food_nutrition WHERE food_name = 'Egg White'
+UNION ALL SELECT id, '2 egg whites', 66 FROM food_nutrition WHERE food_name = 'Egg White'
+UNION ALL SELECT id, '3 egg whites', 99 FROM food_nutrition WHERE food_name = 'Egg White';
+
+-- Omelette
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 egg omelette', 61 FROM food_nutrition WHERE food_name = 'Egg Omelette'
+UNION ALL SELECT id, '2 egg omelette', 122 FROM food_nutrition WHERE food_name = 'Egg Omelette'
+UNION ALL SELECT id, '3 egg omelette', 183 FROM food_nutrition WHERE food_name = 'Egg Omelette';
+
+-- DAIRY (Cups and glasses)
+-- Milk
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small cup (100ml)', 100 FROM food_nutrition WHERE food_name = 'Full Cream Milk'
+UNION ALL SELECT id, '1 cup (150ml)', 150 FROM food_nutrition WHERE food_name = 'Full Cream Milk'
+UNION ALL SELECT id, '1 glass (200ml)', 200 FROM food_nutrition WHERE food_name = 'Full Cream Milk'
+UNION ALL SELECT id, '1 large glass (250ml)', 250 FROM food_nutrition WHERE food_name = 'Full Cream Milk';
+
+-- Curd/Yogurt
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Curd (Full Fat)'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Curd (Full Fat)'
+UNION ALL SELECT id, '1 cup', 200 FROM food_nutrition WHERE food_name = 'Curd (Full Fat)';
+
+-- Paneer
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small piece (cube)', 30 FROM food_nutrition WHERE food_name = 'Paneer (Cottage Cheese)'
+UNION ALL SELECT id, '2 pieces', 60 FROM food_nutrition WHERE food_name = 'Paneer (Cottage Cheese)'
+UNION ALL SELECT id, '100g (3-4 pieces)', 100 FROM food_nutrition WHERE food_name = 'Paneer (Cottage Cheese)'
+UNION ALL SELECT id, '250g (quarter kg)', 250 FROM food_nutrition WHERE food_name = 'Paneer (Cottage Cheese)';
+
+-- RICE & ROTIS (Indian measurements)
+-- Plain Rice (cooked)
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'rice'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'rice'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'rice'
+UNION ALL SELECT id, '1 plate', 250 FROM food_nutrition WHERE food_name = 'rice';
+
+-- Brown Rice
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'brown rice'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'brown rice'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'brown rice'
+UNION ALL SELECT id, '1 plate', 250 FROM food_nutrition WHERE food_name = 'brown rice';
+
+-- Roti
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small roti', 30 FROM food_nutrition WHERE food_name = 'roti'
+UNION ALL SELECT id, '1 medium roti', 40 FROM food_nutrition WHERE food_name = 'roti'
+UNION ALL SELECT id, '1 large roti', 50 FROM food_nutrition WHERE food_name = 'roti';
+
+-- Paratha
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small paratha', 50 FROM food_nutrition WHERE food_name = 'Paratha (Plain)'
+UNION ALL SELECT id, '1 medium paratha', 70 FROM food_nutrition WHERE food_name = 'Paratha (Plain)'
+UNION ALL SELECT id, '1 large paratha', 90 FROM food_nutrition WHERE food_name = 'Paratha (Plain)';
+
+-- Idli
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 idli', 40 FROM food_nutrition WHERE food_name = 'idli'
+UNION ALL SELECT id, '2 idlis', 80 FROM food_nutrition WHERE food_name = 'idli'
+UNION ALL SELECT id, '3 idlis', 120 FROM food_nutrition WHERE food_name = 'idli'
+UNION ALL SELECT id, '4 idlis', 160 FROM food_nutrition WHERE food_name = 'idli';
+
+-- Dosa
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small dosa', 60 FROM food_nutrition WHERE food_name = 'Dosa (Plain)'
+UNION ALL SELECT id, '1 medium dosa', 80 FROM food_nutrition WHERE food_name = 'Dosa (Plain)'
+UNION ALL SELECT id, '1 large dosa', 100 FROM food_nutrition WHERE food_name = 'Dosa (Plain)';
+
+-- CURRIES & SABZIS (Katori measurements)
+-- Palak Paneer
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Palak Paneer'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Palak Paneer'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Palak Paneer';
+
+-- Dal Tadka
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Dal Tadka'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Dal Tadka'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Dal Tadka';
+
+-- Chole Masala
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Chole Masala'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Chole Masala'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Chole Masala';
+
+-- Rajma Masala
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Rajma Masala'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Rajma Masala'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Rajma Masala';
+
+-- Aloo Gobi
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small katori', 100 FROM food_nutrition WHERE food_name = 'Aloo Gobi'
+UNION ALL SELECT id, '1 medium katori', 150 FROM food_nutrition WHERE food_name = 'Aloo Gobi'
+UNION ALL SELECT id, '1 large katori', 200 FROM food_nutrition WHERE food_name = 'Aloo Gobi';
+
+-- SNACKS (Pieces)
+-- Samosa
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 samosa', 60 FROM food_nutrition WHERE food_name = 'Samosa'
+UNION ALL SELECT id, '2 samosas', 120 FROM food_nutrition WHERE food_name = 'Samosa';
+
+-- Pakoras
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '3 small pakoras', 60 FROM food_nutrition WHERE food_name = 'Pakora (Mix Veg)'
+UNION ALL SELECT id, '5 medium pakoras', 100 FROM food_nutrition WHERE food_name = 'Pakora (Mix Veg)';
+
+-- BREADS
+-- Naan
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small naan', 70 FROM food_nutrition WHERE food_name = 'Naan'
+UNION ALL SELECT id, '1 medium naan', 90 FROM food_nutrition WHERE food_name = 'Naan'
+UNION ALL SELECT id, '1 large naan', 110 FROM food_nutrition WHERE food_name = 'Naan';
+
+-- Butter Naan
+INSERT INTO portion_sizes (food_id, portion_name, portion_grams)
+SELECT id, '1 small naan', 70 FROM food_nutrition WHERE food_name = 'Butter Naan'
+UNION ALL SELECT id, '1 medium naan', 90 FROM food_nutrition WHERE food_name = 'Butter Naan'
+UNION ALL SELECT id, '1 large naan', 110 FROM food_nutrition WHERE food_name = 'Butter Naan';
