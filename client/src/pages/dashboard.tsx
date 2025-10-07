@@ -436,12 +436,25 @@ function DataEntryForm({ userId }: { userId: string }) {
                       key={food.id}
                       type="button"
                       onClick={() => selectFood(food)}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 flex items-center gap-3"
                       data-testid={`food-result-${food.id}`}
                     >
-                      <div className="font-medium text-gray-900 dark:text-white">{food.food_name}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {food.calories} cal | P: {food.protein_g}g | C: {food.carbs_g}g | F: {food.fats_g}g
+                      {food.image_url && (
+                        <img 
+                          src={food.image_url} 
+                          alt={food.food_name}
+                          className="w-12 h-12 object-cover rounded-md flex-shrink-0"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://via.placeholder.com/48/4CAF50/ffffff?text=Food';
+                          }}
+                        />
+                      )}
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900 dark:text-white">{food.food_name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {food.calories} cal | P: {food.protein_g}g | C: {food.carbs_g}g | F: {food.fats_g}g
+                        </div>
                       </div>
                     </button>
                   ))}
