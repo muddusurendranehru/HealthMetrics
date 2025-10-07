@@ -103,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Insert user
       const result: any[] = await sql`
-        INSERT INTO users (email, phone_number, password)
+        INSERT INTO users (email, phone_number, password_hash)
         VALUES (${email || null}, ${normalizedPhone}, ${hashedPassword})
         RETURNING id, email, phone_number, created_at
       `;
@@ -161,8 +161,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid phone/email or password" });
       }
       
-      // Check password (column is 'password' in this schema)
-      const validPassword = await bcrypt.compare(password, user.password);
+      // Check password
+      const validPassword = await bcrypt.compare(password, user.password_hash || user.password);
       
       if (!validPassword) {
         return res.status(401).json({ message: "Invalid phone/email or password" });
