@@ -71,6 +71,24 @@ export const waterIntake = pgTable("water_intake", {
   loggedAt: timestamp("logged_at").defaultNow(),
 });
 
+// Food nutrition table (629 foods database)
+export const foodNutrition = pgTable("food_nutrition", {
+  id: serial("id").primaryKey(),
+  foodName: varchar("food_name").notNull(),
+  calories: integer("calories").notNull(), // per 100g
+  proteinG: decimal("protein_g", { precision: 5, scale: 1 }), // per 100g
+  carbsG: decimal("carbs_g", { precision: 5, scale: 1 }), // per 100g
+  fatsG: decimal("fats_g", { precision: 5, scale: 1 }), // per 100g
+});
+
+// Portion sizes table (Indian portion measurements)
+export const portionSizes = pgTable("portion_sizes", {
+  id: serial("id").primaryKey(),
+  foodId: integer("food_id").notNull().references(() => foodNutrition.id),
+  portionName: varchar("portion_name").notNull(), // e.g., "1 medium apple", "1 katori dal"
+  portionGrams: integer("portion_grams").notNull(), // weight in grams
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   meals: many(meals),
@@ -115,6 +133,17 @@ export const waterIntakeRelations = relations(waterIntake, ({ one }) => ({
   }),
 }));
 
+export const foodNutritionRelations = relations(foodNutrition, ({ many }) => ({
+  portions: many(portionSizes),
+}));
+
+export const portionSizesRelations = relations(portionSizes, ({ one }) => ({
+  food: one(foodNutrition, {
+    fields: [portionSizes.foodId],
+    references: [foodNutrition.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -143,6 +172,14 @@ export const insertWaterIntakeSchema = createInsertSchema(waterIntake).omit({
   loggedAt: true,
 });
 
+export const insertFoodNutritionSchema = createInsertSchema(foodNutrition).omit({
+  id: true,
+});
+
+export const insertPortionSizeSchema = createInsertSchema(portionSizes).omit({
+  id: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -161,3 +198,9 @@ export type WeightTracking = typeof weightTracking.$inferSelect;
 
 export type InsertWaterIntake = z.infer<typeof insertWaterIntakeSchema>;
 export type WaterIntake = typeof waterIntake.$inferSelect;
+
+export type InsertFoodNutrition = z.infer<typeof insertFoodNutritionSchema>;
+export type FoodNutrition = typeof foodNutrition.$inferSelect;
+
+export type InsertPortionSize = z.infer<typeof insertPortionSizeSchema>;
+export type PortionSize = typeof portionSizes.$inferSelect;
