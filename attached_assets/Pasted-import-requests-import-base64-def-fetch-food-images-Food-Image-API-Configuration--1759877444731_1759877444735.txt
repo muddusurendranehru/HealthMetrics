@@ -1,0 +1,64 @@
+import requests
+import base64
+
+def fetch_food_images():
+    # Food Image API Configuration
+    FOOD_IMAGE_API = "https://api.edamam.com/api/food-database/v2/parser"
+    API_ID = "your_edamam_api_id"
+    API_KEY = "your_edamam_api_key"
+
+    # List of foods to update
+    foods = ['mango', 'roti', 'apple', 'chicken']
+
+    for food in foods:
+        try:
+            # API Call for Food Images
+            response = requests.get(
+                FOOD_IMAGE_API,
+                params={
+                    "ingr": food,
+                    "app_id": API_ID,
+                    "app_key": API_KEY
+                }
+            )
+            data = response.json()
+
+            # Extract First Image
+            if data.get('hints') and data['hints'][0].get('food', {}).get('image'):
+                image_url = data['hints'][0]['food']['image']
+                
+                # Download Image
+                image_response = requests.get(image_url)
+                if image_response.status_code == 200:
+                    # Base64 Encode
+                    base64_image = base64.b64encode(image_response.content).decode('utf-8')
+                    
+                    # Update Database
+                    update_query = """
+                    UPDATE food_nutrition 
+                    SET image_url = %s, 
+                        image_base64 = %s 
+                    WHERE food_name ILIKE %s
+                    """
+                    cursor.execute(update_query, (image_url, base64_image, f'%{food}%'))
+                    connection.commit()
+
+        except Exception as e:
+            print(f"Error fetching image for {food}: {e}")
+
+# Frontend Rendering
+def display_food_image(food_name):
+    query = """
+    SELECT image_url, image_base64 
+    FROM food_nutrition 
+    WHERE food_name ILIKE %s
+    """
+    cursor.execute(query, (f'%{food_name}%',))
+    result = cursor.fetchone()
+
+    if result and result[1]:  # Prefer base64
+        return result[1]
+    elif result and result[0]:  # Fallback to URL
+        return result[0]
+    else:
+        return "default_food_image.jpg"
