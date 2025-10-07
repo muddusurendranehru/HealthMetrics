@@ -129,29 +129,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       let user = null;
+      const trimmedIdentifier = identifier.trim();
       
-      // Check if identifier is phone number (contains only digits, possibly with + or spaces)
-      const isPhone = /^[\+\d\s\-\(\)]+$/.test(identifier);
+      // Check if identifier looks like email (contains @)
+      const isEmail = trimmedIdentifier.includes('@');
       
-      if (isPhone) {
-        // Try to normalize and find by phone
+      if (isEmail) {
+        // Try email first
+        const users: any[] = await sql`
+          SELECT * FROM users WHERE email = ${trimmedIdentifier}
+        `;
+        user = users[0] || null;
+      } else {
+        // Try phone number
         try {
-          const normalizedPhone = normalizePhoneNumber(identifier);
+          const normalizedPhone = normalizePhoneNumber(trimmedIdentifier);
           const users: any[] = await sql`
             SELECT * FROM users WHERE phone_number = ${normalizedPhone}
           `;
           user = users[0] || null;
         } catch (error) {
-          // Invalid phone format, continue to email check
+          // Invalid phone format, try as email fallback
+          const users: any[] = await sql`
+            SELECT * FROM users WHERE email = ${trimmedIdentifier}
+          `;
+          user = users[0] || null;
         }
-      }
-      
-      // If not found by phone, try email
-      if (!user) {
-        const users: any[] = await sql`
-          SELECT * FROM users WHERE email = ${identifier}
-        `;
-        user = users[0] || null;
       }
       
       if (!user) {
