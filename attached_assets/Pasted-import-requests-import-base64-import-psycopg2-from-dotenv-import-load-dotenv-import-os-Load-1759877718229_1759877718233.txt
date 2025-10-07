@@ -1,0 +1,100 @@
+import requests
+import base64
+import psycopg2
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
+
+# Database Connection
+def get_db_connection():
+    return psycopg2.connect(
+        host=os.getenv('DB_HOST'),
+        database=os.getenv('DB_NAME'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD')
+    )
+
+def fetch_food_images():
+    # Food Image APIs - Multiple sources for reliability
+    APIS = [
+        {
+            "url": "https://api.edamam.com/api/food-database/v2/parser",
+            "params": {
+                "app_id": os.getenv('EDAMAM_APP_ID'),
+                "app_key": os.getenv('EDAMAM_APP_KEY')
+            }
+        },
+        # Add more APIs as fallback
+    ]
+
+    # Foods to fetch images for
+    foods = ['mango', 'roti', 'apple', 'chicken', 'spinach', 'rice']
+
+    # Database connection
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    for food in foods:
+        for api in APIS:
+            try:
+                response = requests.get(
+                    api['url'],
+                    params={**api['params'], "ingr": food}
+                )
+                data = response.json()
+
+                # Extract first image
+                if data.get('hints') and data['hints'][0].get('food', {}).get('image'):
+                    image_url = data['hints'][0]['food']['image']
+                    
+                    # Download image
+                    image_response = requests.get(image_url)
+                    if image_response.status_code == 200:
+                        # Base64 encode
+                        base64_image = base64.b64encode(image_response.content).decode('utf-8')
+                        
+                        # Update database
+                        update_query = """
+                        UPDATE food_nutrition 
+                        SET 
+                            image_url = %s, 
+                            image_base64 = %s 
+                        WHERE food_name ILIKE %s
+                        """
+                        cursor.execute(update_query, (image_url, base64_image, f'%{food}%'))
+                        conn.commit()
+                        break  # Success, move to next food
+            
+            except Exception as e:
+                print(f"Error fetching image for {food}: {e}")
+
+    # Close connection
+    cursor.close()
+    conn.close()
+
+# Verification Query
+def verify_image_population():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT food_name, image_url, 
+               CASE WHEN image_base64 IS NOT NULL THEN 'Yes' ELSE 'No' END as has_base64
+        FROM food_nutrition
+        WHERE image_url IS NOT NULL OR image_base64 IS NOT NULL
+        LIMIT 10
+    """)
+    
+    results = cursor.fetchall()
+    for row in results:
+        print(f"Food: {row[0]}, URL: {row[1]}, Base64: {row[2]}")
+    
+    cursor.close()
+    conn.close()
+
+# Main execution
+if __name__ == "__main__":
+    fetch_food_images()
+    verify_image_population()
