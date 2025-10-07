@@ -1,5 +1,5 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, decimal, date } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, decimal, date, serial, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -85,6 +85,7 @@ export const foodNutrition = pgTable("food_nutrition", {
   carbsG: decimal("carbs_g"),
   fatsG: decimal("fats_g"),
   imageUrl: varchar("image_url", { length: 500 }),
+  imageBase64: text("image_base64"),
 });
 
 // Portion sizes table
@@ -95,6 +96,27 @@ export const portionSizes = pgTable("portion_sizes", {
   portionGrams: integer("portion_grams").notNull(),
 });
 
+// Meal logs table
+export const mealLogs = pgTable("meal_logs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  foodName: text("food_name").notNull(),
+  calories: integer("calories").default(0),
+  proteinG: decimal("protein_g").default("0"),
+  carbsG: decimal("carbs_g").default("0"),
+  fatsG: decimal("fats_g").default("0"),
+  mealDate: date("meal_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  mealType: varchar("meal_type").default("snack"),
+});
+
+// Session table (managed by connect-pg-simple)
+export const session = pgTable("session", {
+  sid: varchar("sid").primaryKey(),
+  sess: json("sess").notNull(),
+  expire: timestamp("expire").notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   meals: many(meals),
@@ -102,6 +124,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   sleepRecords: many(sleepRecords),
   weightTracking: many(weightTracking),
   waterIntake: many(waterIntake),
+  mealLogs: many(mealLogs),
 }));
 
 export const mealsRelations = relations(meals, ({ one }) => ({
@@ -150,6 +173,13 @@ export const portionSizesRelations = relations(portionSizes, ({ one }) => ({
   }),
 }));
 
+export const mealLogsRelations = relations(mealLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [mealLogs.userId],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -190,6 +220,11 @@ export const insertPortionSizeSchema = createInsertSchema(portionSizes).omit({
   id: true,
 });
 
+export const insertMealLogSchema = createInsertSchema(mealLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -214,3 +249,6 @@ export type FoodNutrition = typeof foodNutrition.$inferSelect;
 
 export type InsertPortionSize = z.infer<typeof insertPortionSizeSchema>;
 export type PortionSize = typeof portionSizes.$inferSelect;
+
+export type InsertMealLog = z.infer<typeof insertMealLogSchema>;
+export type MealLog = typeof mealLogs.$inferSelect;
