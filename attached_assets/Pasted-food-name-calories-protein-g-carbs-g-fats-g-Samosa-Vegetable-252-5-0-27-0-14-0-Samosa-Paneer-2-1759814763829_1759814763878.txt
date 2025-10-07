@@ -1,0 +1,100 @@
+food_name,calories,protein_g,carbs_g,fats_g
+Samosa (Vegetable),252,5.0,27.0,14.0
+Samosa (Paneer),268,7.0,26.0,15.5
+Samosa (Keema),290,12.0,25.0,16.0
+Kachori (Dal),280,6.0,30.0,15.0
+Kachori (Pyaaz),275,5.5,29.0,14.5
+Kachori (Matar),285,7.0,31.0,14.0
+Pakora (Onion),250,5.0,26.0,14.5
+Pakora (Mix Veg),245,5.5,25.0,14.0
+Pakora (Paneer),230,10.0,18.0,13.0
+Pakora (Bread),265,7.0,32.0,12.0
+Pakora (Chicken),215,14.0,12.0,13.5
+Aloo Tikki,180,3.5,25.0,7.0
+Vada Pav,267,6.5,36.0,10.5
+Pav Bhaji,135,4.0,20.0,4.5
+Misal Pav,180,7.0,28.0,4.0
+Dabeli,210,4.5,32.0,7.0
+Bhel Puri,170,4.5,30.0,3.5
+Sev Puri,200,4.0,28.0,7.5
+Dahi Puri,140,4.5,22.0,4.0
+Pani Puri,120,3.0,24.0,2.0
+Ragda Pattice,185,5.5,27.0,6.0
+Aloo Chaat,145,3.5,23.0,4.5
+Papri Chaat,195,5.0,28.0,6.5
+Dahi Bhalla,150,6.0,20.0,5.5
+Raj Kachori,245,6.5,32.0,10.0
+Puchka (Golgappa),125,3.0,24.0,2.5
+Kathi Roll (Veg),260,7.0,35.0,9.5
+Kathi Roll (Paneer),295,10.0,34.0,12.5
+Kathi Roll (Chicken),295,15.0,32.0,11.5
+Kathi Roll (Egg),275,13.0,30.0,11.0
+Frankie (Veg),245,6.0,38.0,7.5
+Frankie (Paneer),285,10.0,36.0,11.0
+Frankie (Chicken),310,16.0,35.0,12.0
+Spring Roll (Veg),185,5.5,25.0,6.5
+Spring Roll (Chicken),205,10.0,22.0,8.5
+Momos (Veg Steamed),105,3.8,16.5,2.0
+Momos (Veg Fried),195,5.0,22.0,9.0
+Momos (Chicken Steamed),120,8.0,14.0,3.5
+Momos (Chicken Fried),220,10.0,20.0,11.0
+Momos (Paneer),125,6.0,15.0,4.5
+Puff (Veg),285,5.5,30.0,16.0
+Puff (Egg),295,9.0,28.0,17.0
+Puff (Chicken),310,12.0,27.0,18.0
+Cutlet (Veg),175,4.5,22.0,7.5
+Cutlet (Chicken),195,12.0,15.0,9.5
+Burger (Veg),240,8.0,32.0,9.0
+Burger (Chicken),265,15.0,30.0,10.5
+Burger (Paneer),255,10.0,31.0,10.0
+Burger (Aloo Tikki),235,6.5,34.0,8.5
+Burger (McAloo Tikki Style),245,7.0,35.0,9.0
+Cheeseburger,295,16.0,28.0,14.0
+Chicken Burger (Crispy),320,18.0,30.0,15.0
+Fish Burger,275,14.0,28.0,12.5
+Pizza (Margherita),266,11.0,33.0,10.0
+Pizza (Veggie),250,10.5,32.0,9.5
+Pizza (Paneer Tikka),280,12.0,31.0,12.0
+Pizza (Chicken),290,14.0,30.0,12.5
+Pizza (Pepperoni),298,13.0,31.0,13.5
+Pizza (Cheese),271,12.0,33.0,10.5
+French Fries,312,3.4,41.0,15.0
+Potato Wedges,165,3.0,24.0,6.5
+Fried Chicken (Pieces),260,19.0,10.0,16.5
+Chicken Nuggets,296,15.0,18.0,18.5
+Chicken Popcorn,285,16.0,17.0,17.0
+Hot Dog,290,10.5,23.0,18.0
+Corn Dog,250,8.0,28.0,12.0
+Nachos (with Cheese),312,7.5,36.0,15.5
+Tacos (Veg),185,5.0,24.0,8.0
+Tacos (Chicken),225,12.0,22.0,10.5
+Burrito (Veg),180,6.0,28.0,5.5
+Burrito (Chicken),215,13.0,26.0,7.5
+Quesadilla (Cheese),240,11.0,25.0,11.5
+Quesadilla (Chicken),265,15.0,24.0,13.0
+Shawarma (Chicken),250,18.0,20.0,12.0
+Shawarma (Paneer),235,11.0,22.0,11.5
+Falafel,333,13.3,31.8,17.8
+Kebab Roll,270,14.0,28.0,12.0
+Seekh Kebab Roll,285,16.0,27.0,13.5
+Sandwich (Veg Grilled),195,7.0,28.0,6.5
+Sandwich (Cheese Grilled),245,10.0,26.0,11.0
+Sandwich (Chicken Grilled),230,14.0,24.0,8.5
+Club Sandwich,265,12.0,27.0,12.5
+Paneer Sandwich,240,10.5,26.0,10.5
+Bombay Sandwich,185,6.5,28.0,5.5
+Veg Grilled Sandwich,195,7.0,28.0,6.5
+Cheese Sandwich (Cold),280,12.0,30.0,13.0
+Egg Sandwich,215,11.0,22.0,9.5
+Chicken Sandwich,245,15.0,23.0,10.5
+Fish Sandwich,255,13.5,25.0,11.5
+Dosa Wrap,180,4.5,32.0,4.0
+Paneer Wrap,265,11.0,30.0,11.5
+Chicken Wrap,285,16.0,29.0,12.0
+Falafel Wrap,295,12.0,35.0,12.5
+Donuts,452,4.9,51.0,25.0
+Croissant,406,8.2,45.8,21.0
+Muffin (Chocolate),425,6.0,52.0,22.0
+Cookies (Chocolate Chip),502,5.4,64.0,25.0
+Fried Rice (Restaurant Style),130,4.0,24.0,2.5
+Noodles (Hakka),175,5.5,29.0,4.0
