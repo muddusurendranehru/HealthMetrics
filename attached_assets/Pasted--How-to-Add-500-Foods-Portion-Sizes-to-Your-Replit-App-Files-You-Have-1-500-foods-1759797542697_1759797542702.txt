@@ -1,0 +1,157 @@
+# 📦 How to Add 500 Foods + Portion Sizes to Your Replit App
+
+## ✅ Files You Have:
+1. **500_foods.csv** - 500 Indian foods with nutrition per 100g
+2. **portion_sizes_table.sql** - Creates the new portion_sizes table
+3. **portion_sizes_data.sql** - Adds Indian portion sizes (katori, handfuls, pieces, etc.)
+
+---
+
+## 🚀 Step-by-Step Instructions:
+
+### STEP 1: Upload the CSV File
+1. In Replit, click **"Upload file"** button (or drag & drop)
+2. Upload **500_foods.csv**
+3. It will appear in your files list
+
+### STEP 2: Import Foods into Database
+In your Replit Shell or Python script, run:
+
+```python
+import sqlite3
+import csv
+
+# Connect to your database
+conn = sqlite3.connect('your_database.db')  # Change to your DB name
+cursor = conn.cursor()
+
+# Read and import the CSV
+with open('500_foods.csv', 'r', encoding='utf-8') as file:
+    csv_reader = csv.DictReader(file)
+    for row in csv_reader:
+        cursor.execute('''
+            INSERT INTO food_nutrition (food_name, calories, protein_g, carbs_g, fats_g)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (row['food_name'], row['calories'], row['protein_g'], row['carbs_g'], row['fats_g']))
+
+conn.commit()
+print("✅ 500 foods added successfully!")
+conn.close()
+```
+
+### STEP 3: Create Portion Sizes Table
+1. Upload **portion_sizes_table.sql** to Replit
+2. Run it:
+
+```python
+import sqlite3
+
+conn = sqlite3.connect('your_database.db')
+cursor = conn.cursor()
+
+# Read and execute the SQL file
+with open('portion_sizes_table.sql', 'r') as file:
+    sql_script = file.read()
+    cursor.executescript(sql_script)
+
+conn.commit()
+print("✅ Portion sizes table created!")
+conn.close()
+```
+
+### STEP 4: Add Portion Sizes Data
+1. Upload **portion_sizes_data.sql** to Replit
+2. Run it:
+
+```python
+import sqlite3
+
+conn = sqlite3.connect('your_database.db')
+cursor = conn.cursor()
+
+# Read and execute the SQL file
+with open('portion_sizes_data.sql', 'r') as file:
+    sql_script = file.read()
+    cursor.executescript(sql_script)
+
+conn.commit()
+print("✅ Portion sizes added successfully!")
+conn.close()
+```
+
+---
+
+## 📊 What You'll Have:
+
+### In `food_nutrition` table:
+- **629 OLD foods** (your current database)
+- **+500 NEW foods** (from CSV)
+- **= 1,129 total foods!** 🎉
+
+### In `portion_sizes` table (NEW):
+- **200+ Indian portion sizes** like:
+  - 1 medium apple (120g)
+  - 1 katori dal (150g)
+  - 1 handful almonds (30g)
+  - 2 rotis (80g)
+  - 1 medium piece chicken (120g)
+
+---
+
+## 🍛 How Patients Will Use It:
+
+**Before (difficult):**
+Patient has to think: "I ate... umm... maybe 127 grams of chicken?"
+
+**After (easy):**
+Patient selects: 
+- ○ 1 small piece (75g)
+- ● 1 medium piece (120g) ← Click!
+- ○ 1 large piece (180g)
+- ○ 250g (quarter kg)
+
+App automatically calculates nutrition!
+
+---
+
+## 📱 Next Steps (In Your App Code):
+
+You'll need to update your app to:
+
+1. **Show portion dropdown** when adding food
+2. **Calculate nutrition** based on selected portion
+3. **Display user-friendly names** ("1 katori dal" instead of "150g")
+
+Example:
+```python
+# When patient searches for "dal"
+food = get_food("Moong Dal")
+portions = get_portions(food.id)
+
+# Show dropdown with:
+# - 1 small katori (100g)
+# - 1 medium katori (150g)  ← patient selects
+# - 1 large katori (200g)
+# - 250g (1 cup)
+
+# Calculate:
+selected_portion = 150  # grams
+calories = food.calories * (selected_portion / 100)
+# Result: Patient ate 150g dal = 520 calories
+```
+
+---
+
+## ✅ Done!
+Your database now has:
+- ✅ 1,129 foods
+- ✅ Indian portion sizes
+- ✅ Easy tracking for patients!
+
+---
+
+## 🆘 Need Help?
+If anything doesn't work:
+1. Check your database name
+2. Make sure `food_nutrition` table exists
+3. Run each step separately and check for errors
