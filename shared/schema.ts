@@ -79,6 +79,7 @@ export const foodNutrition = pgTable("food_nutrition", {
   proteinG: decimal("protein_g", { precision: 5, scale: 1 }), // per 100g
   carbsG: decimal("carbs_g", { precision: 5, scale: 1 }), // per 100g
   fatsG: decimal("fats_g", { precision: 5, scale: 1 }), // per 100g
+  imageUrl: varchar("image_url", { length: 500 }), // URL to food image
 });
 
 // Portion sizes table (Indian portion measurements)
