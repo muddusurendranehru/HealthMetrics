@@ -4,18 +4,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
-import { Plus, Apple, Dumbbell, Moon, Weight, Droplets } from "lucide-react";
+import { Plus, Search, Utensils, LogOut, Flame, Beef, Droplet } from "lucide-react";
 
 type User = {
-  id: string;
+  id: number;
   email: string;
-  firstName?: string;
-  lastName?: string;
+};
+
+type DashboardSummary = {
+  today: {
+    meals: {
+      total_calories: number;
+      total_protein: number;
+      total_carbs: number;
+      total_fats: number;
+      meal_count: number;
+    };
+    exercises: {
+      total_minutes: number;
+      total_burned: number;
+      exercise_count: number;
+    };
+    sleep: {
+      total_hours: number;
+      sleep_quality: number;
+      sleep_date: string;
+    } | null;
+  };
 };
 
 export default function DashboardPage() {
@@ -32,102 +51,217 @@ export default function DashboardPage() {
     }
   }, [setLocation]);
 
-  const logout = () => {
-    localStorage.removeItem("user");
-    setLocation("/login");
+  const logout = async () => {
+    try {
+      await apiRequest("POST", "/api/logout", {});
+      localStorage.removeItem("user");
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully"
+      });
+      setLocation("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   if (!user) {
-    return <div>Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-indigo-950 dark:to-purple-950">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow">
+      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Health Tracker Dashboard
-            </h1>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Welcome, {user.email}
-              </span>
-              <Button variant="outline" onClick={logout} data-testid="button-logout">
-                Log Out
-              </Button>
+          <div className="flex justify-between items-center py-4">
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                90-Day Health Tracker
+              </h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Welcome, {user.email}</p>
             </div>
+            <Button variant="outline" onClick={logout} data-testid="button-logout" className="gap-2">
+              <LogOut className="h-4 w-4" />
+              Log Out
+            </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            {/* Left Box: Enter Data */}
-            <Card className="h-fit" data-testid="card-enter-data">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Plus className="mr-2 h-5 w-5" />
-                  Log Health Data
-                </CardTitle>
-                <CardDescription>
-                  Enter your meals, exercises, sleep, weight, and water intake
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DataEntryForm userId={user.id} />
-              </CardContent>
-            </Card>
+      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {/* Speedometer Dashboard */}
+        <SpeedometerDashboard userId={user.id} />
 
-            {/* Right Box: View Data */}
-            <Card className="h-fit" data-testid="card-view-data">
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>
-                  View your recent health tracking data
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DataView userId={user.id} />
-              </CardContent>
-            </Card>
+        {/* Data Entry and View Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          {/* Food Entry */}
+          <FoodEntryCard userId={user.id} />
 
-          </div>
+          {/* Today's Meals */}
+          <TodaysMealsCard userId={user.id} />
         </div>
       </main>
     </div>
   );
 }
 
-function DataEntryForm({ userId }: { userId: string }) {
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<"meal" | "exercise" | "sleep" | "weight" | "water">("meal");
-
-  // Meal form state
-  const [mealData, setMealData] = useState({
-    mealType: "",
-    foodItem: "",
-    calories: "",
-    protein: "",
-    carbs: "",
-    fats: ""
+// Speedometer Dashboard Component
+function SpeedometerDashboard({ userId }: { userId: number }) {
+  const { data: summary, isLoading } = useQuery<DashboardSummary>({
+    queryKey: [`/api/dashboard/summary`],
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
-  
-  // Food search state
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {[1, 2, 3].map(i => (
+          <Card key={i} className="animate-pulse">
+            <CardContent className="pt-6">
+              <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  const calories = summary?.today.meals.total_calories || 0;
+  const protein = summary?.today.meals.total_protein || 0;
+  const fats = summary?.today.meals.total_fats || 0;
+
+  // Daily goals
+  const calorieGoal = 2000;
+  const proteinGoal = 100;
+  const fatsGoal = 65;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      {/* Calories Ring */}
+      <SpeedometerRing
+        value={calories}
+        goal={calorieGoal}
+        label="Calories"
+        icon={<Flame className="h-8 w-8" />}
+        colorStart="#fb923c"
+        colorEnd="#ef4444"
+        unit="kcal"
+      />
+
+      {/* Protein Ring */}
+      <SpeedometerRing
+        value={protein}
+        goal={proteinGoal}
+        label="Protein"
+        icon={<Beef className="h-8 w-8" />}
+        colorStart="#f472b6"
+        colorEnd="#f43f5e"
+        unit="g"
+      />
+
+      {/* Fats Ring */}
+      <SpeedometerRing
+        value={fats}
+        goal={fatsGoal}
+        label="Fats"
+        icon={<Droplet className="h-8 w-8" />}
+        colorStart="#60a5fa"
+        colorEnd="#06b6d4"
+        unit="g"
+      />
+    </div>
+  );
+}
+
+// Speedometer Ring Component
+function SpeedometerRing({ value, goal, label, icon, colorStart, colorEnd, unit }: {
+  value: number;
+  goal: number;
+  label: string;
+  icon: React.ReactNode;
+  colorStart: string;
+  colorEnd: string;
+  unit: string;
+}) {
+  const percentage = Math.min((value / goal) * 100, 100);
+  const circumference = 2 * Math.PI * 70; // radius = 70
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <Card className="relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+      <CardContent className="pt-6">
+        <div className="flex flex-col items-center">
+          {/* Label */}
+          <div className="flex items-center gap-2 mb-4">
+            <div style={{ color: colorStart }}>{icon}</div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{label}</h3>
+          </div>
+
+          {/* SVG Ring */}
+          <div className="relative w-48 h-48">
+            <svg className="transform -rotate-90 w-48 h-48">
+              {/* Background circle */}
+              <circle
+                cx="96"
+                cy="96"
+                r="70"
+                stroke="currentColor"
+                strokeWidth="12"
+                fill="transparent"
+                className="text-gray-200 dark:text-gray-700"
+              />
+              {/* Progress circle */}
+              <circle
+                cx="96"
+                cy="96"
+                r="70"
+                stroke={`url(#gradient-${label})`}
+                strokeWidth="12"
+                fill="transparent"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                className="transition-all duration-1000 ease-out"
+              />
+              {/* Gradient definition */}
+              <defs>
+                <linearGradient id={`gradient-${label}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor={colorStart} />
+                  <stop offset="100%" stopColor={colorEnd} />
+                </linearGradient>
+              </defs>
+            </svg>
+
+            {/* Center text */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                {Math.round(value)}
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                / {goal} {unit}
+              </div>
+              <div className="text-xs font-semibold mt-1" style={{ color: colorStart }}>
+                {percentage.toFixed(0)}%
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Food Entry Card Component
+function FoodEntryCard({ userId }: { userId: number }) {
+  const { toast } = useToast();
   const [foodSearch, setFoodSearch] = useState("");
   const [foodResults, setFoodResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
-  const [selectedFoodId, setSelectedFoodId] = useState<number | null>(null);
-  const [selectedFoodNutritionPer100g, setSelectedFoodNutritionPer100g] = useState<any>(null);
-  
-  // Portion state
-  const [portions, setPortions] = useState<any[]>([]);
-  const [selectedPortion, setSelectedPortion] = useState("");
-  
+  const [selectedFood, setSelectedFood] = useState<any>(null);
+  const [mealType, setMealType] = useState<string>("");
+
   // Search foods when user types
   useEffect(() => {
     const searchFoods = async () => {
@@ -135,9 +269,9 @@ function DataEntryForm({ userId }: { userId: string }) {
         setFoodResults([]);
         return;
       }
-      
+
       try {
-        const response = await fetch(`/api/foods/search?q=${encodeURIComponent(foodSearch)}`);
+        const response = await apiRequest("GET", `/api/foods/search?q=${encodeURIComponent(foodSearch)}`, undefined);
         const data = await response.json();
         setFoodResults(data.foods || []);
         setShowResults(true);
@@ -145,583 +279,231 @@ function DataEntryForm({ userId }: { userId: string }) {
         console.error("Search error:", error);
       }
     };
-    
+
     const timeoutId = setTimeout(searchFoods, 300);
     return () => clearTimeout(timeoutId);
   }, [foodSearch]);
-  
-  // Select food from search results
-  const selectFood = (food: any) => {
-    setSelectedFoodId(food.id);
-    setSelectedFoodNutritionPer100g({
-      calories: food.calories,
-      protein_g: food.protein_g,
-      carbs_g: food.carbs_g,
-      fats_g: food.fats_g
-    });
-    setMealData({
-      ...mealData,
-      foodItem: food.food_name,
-      calories: food.calories.toString(),
-      protein: food.protein_g?.toString() || "",
-      carbs: food.carbs_g?.toString() || "",
-      fats: food.fats_g?.toString() || ""
-    });
-    setFoodSearch(food.food_name);
-    setShowResults(false);
-    setSelectedPortion("");
-  };
-  
-  // Fetch portions when food is selected
-  useEffect(() => {
-    const fetchPortions = async () => {
-      if (!selectedFoodId) {
-        setPortions([]);
-        return;
-      }
-      
-      try {
-        const response = await fetch(`/api/foods/${selectedFoodId}/portions`);
-        const data = await response.json();
-        setPortions(data.portions || []);
-      } catch (error) {
-        console.error("Fetch portions error:", error);
-        setPortions([]);
-      }
-    };
-    
-    fetchPortions();
-  }, [selectedFoodId]);
-  
-  // Calculate nutrition when portion is selected
-  const handlePortionChange = (portionId: string) => {
-    setSelectedPortion(portionId);
-    
-    const portion = portions.find(p => p.id.toString() === portionId);
-    if (!portion || !selectedFoodNutritionPer100g) return;
-    
-    const multiplier = portion.portion_grams / 100;
-    
-    setMealData({
-      ...mealData,
-      calories: Math.round(selectedFoodNutritionPer100g.calories * multiplier).toString(),
-      protein: (selectedFoodNutritionPer100g.protein_g * multiplier).toFixed(1),
-      carbs: (selectedFoodNutritionPer100g.carbs_g * multiplier).toFixed(1),
-      fats: (selectedFoodNutritionPer100g.fats_g * multiplier).toFixed(1)
-    });
-  };
 
-  // Exercise form state
-  const [exerciseData, setExerciseData] = useState({
-    exerciseType: "",
-    exerciseName: "",
-    duration: "",
-    caloriesBurned: ""
-  });
-
-  // Sleep form state
-  const [sleepData, setSleepData] = useState({
-    sleepDate: new Date().toISOString().split('T')[0],
-    hoursSlept: "",
-    sleepQuality: ""
-  });
-
-  // Weight form state
-  const [weightData, setWeightData] = useState({
-    weight: ""
-  });
-
-  // Water form state
-  const [waterData, setWaterData] = useState({
-    amount: "",
-    unit: "glasses"
-  });
-
-  const addDataMutation = useMutation({
+  const addMealMutation = useMutation({
     mutationFn: async (data: any) => {
-      let endpoint = "";
-      let payload = { ...data, userId };
-
-      switch (activeTab) {
-        case "meal":
-          endpoint = "/api/meals/add";
-          payload = {
-            food_name: data.foodItem,
-            calories: parseInt(data.calories) || 0,
-            protein_g: parseFloat(data.protein) || 0,
-            carbs_g: parseFloat(data.carbs) || 0,
-            fats_g: parseFloat(data.fats) || 0,
-            meal_type: data.mealType
-          };
-          break;
-        case "exercise":
-          endpoint = "/api/exercises";
-          if (data.duration) payload.duration = parseInt(data.duration);
-          if (data.caloriesBurned) payload.caloriesBurned = parseInt(data.caloriesBurned);
-          break;
-        case "sleep":
-          endpoint = "/api/sleep";
-          if (data.hoursSlept) payload.hoursSlept = parseFloat(data.hoursSlept);
-          if (data.sleepQuality) payload.sleepQuality = parseInt(data.sleepQuality);
-          break;
-        case "weight":
-          endpoint = "/api/weight";
-          payload.weight = parseFloat(data.weight);
-          break;
-        case "water":
-          endpoint = "/api/water";
-          payload.amount = parseFloat(data.amount);
-          break;
-      }
-
-      const response = await apiRequest("POST", endpoint, payload);
+      const response = await apiRequest("POST", "/api/meals", data);
       return await response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Success!",
-        description: `${activeTab} data logged successfully`
+        title: "Meal Added!",
+        description: "Your meal has been logged successfully"
       });
-      
       // Reset form
-      switch (activeTab) {
-        case "meal":
-          setMealData({ mealType: "", foodItem: "", calories: "", protein: "", carbs: "", fats: "" });
-          setFoodSearch("");
-          setSelectedFoodId(null);
-          setSelectedFoodNutritionPer100g(null);
-          setPortions([]);
-          setSelectedPortion("");
-          break;
-        case "exercise":
-          setExerciseData({ exerciseType: "", exerciseName: "", duration: "", caloriesBurned: "" });
-          break;
-        case "sleep":
-          setSleepData({ sleepDate: new Date().toISOString().split('T')[0], hoursSlept: "", sleepQuality: "" });
-          break;
-        case "weight":
-          setWeightData({ weight: "" });
-          break;
-        case "water":
-          setWaterData({ amount: "", unit: "glasses" });
-          break;
-      }
+      setFoodSearch("");
+      setSelectedFood(null);
+      setMealType("");
+      setShowResults(false);
+      // Refresh dashboard
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/summary"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meals/today"] });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to log data",
+        description: error.message || "Failed to add meal",
         variant: "destructive"
       });
     }
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    let dataToSubmit;
-    switch (activeTab) {
-      case "meal":
-        dataToSubmit = mealData;
-        break;
-      case "exercise":
-        dataToSubmit = exerciseData;
-        break;
-      case "sleep":
-        dataToSubmit = sleepData;
-        break;
-      case "weight":
-        dataToSubmit = weightData;
-        break;
-      case "water":
-        dataToSubmit = waterData;
-        break;
+  const handleAddMeal = () => {
+    if (!selectedFood || !mealType) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a food and meal type",
+        variant: "destructive"
+      });
+      return;
     }
 
-    addDataMutation.mutate(dataToSubmit);
+    addMealMutation.mutate({
+      mealName: selectedFood.food_name,
+      mealType: mealType,
+      calories: selectedFood.calories,
+      proteinG: selectedFood.protein_g,
+      carbsG: selectedFood.carbs_g,
+      fatsG: selectedFood.fats_g
+    });
   };
 
   return (
-    <div className="space-y-4">
-      {/* Tab Navigation */}
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant={activeTab === "meal" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setActiveTab("meal")}
-          data-testid="tab-meal"
-        >
-          <Apple className="mr-1 h-4 w-4" />
-          Meal
-        </Button>
-        <Button
-          variant={activeTab === "exercise" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setActiveTab("exercise")}
-          data-testid="tab-exercise"
-        >
-          <Dumbbell className="mr-1 h-4 w-4" />
-          Exercise
-        </Button>
-        <Button
-          variant={activeTab === "sleep" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setActiveTab("sleep")}
-          data-testid="tab-sleep"
-        >
-          <Moon className="mr-1 h-4 w-4" />
-          Sleep
-        </Button>
-        <Button
-          variant={activeTab === "weight" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setActiveTab("weight")}
-          data-testid="tab-weight"
-        >
-          <Weight className="mr-1 h-4 w-4" />
-          Weight
-        </Button>
-        <Button
-          variant={activeTab === "water" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setActiveTab("water")}
-          data-testid="tab-water"
-        >
-          <Droplets className="mr-1 h-4 w-4" />
-          Water
-        </Button>
-      </div>
+    <Card className="shadow-lg">
+      <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950">
+        <CardTitle className="flex items-center gap-2">
+          <Utensils className="h-5 w-5" />
+          Log Your Meal
+        </CardTitle>
+        <CardDescription>
+          Search and add food to track your nutrition
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pt-6 space-y-4">
+        {/* Meal Type Selection */}
+        <div>
+          <Label>Meal Type *</Label>
+          <Select value={mealType} onValueChange={setMealType}>
+            <SelectTrigger className="mt-1" data-testid="select-meal-type">
+              <SelectValue placeholder="When are you eating?" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="breakfast">🌅 Breakfast</SelectItem>
+              <SelectItem value="lunch">🌞 Lunch</SelectItem>
+              <SelectItem value="dinner">🌙 Dinner</SelectItem>
+              <SelectItem value="snack">🍪 Snack</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-      {/* Form Content */}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {activeTab === "meal" && (
-          <>
-            <div>
-              <Label htmlFor="mealType">Meal Type</Label>
-              <Select 
-                value={mealData.mealType} 
-                onValueChange={(value) => setMealData({ ...mealData, mealType: value })}
-              >
-                <SelectTrigger data-testid="select-meal-type">
-                  <SelectValue placeholder="Select meal type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="breakfast">Breakfast</SelectItem>
-                  <SelectItem value="lunch">Lunch</SelectItem>
-                  <SelectItem value="dinner">Dinner</SelectItem>
-                  <SelectItem value="snack">Snack</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="relative">
-              <Label htmlFor="foodSearch">Search Food</Label>
-              <Input
-                id="foodSearch"
-                value={foodSearch}
-                onChange={(e) => {
-                  setFoodSearch(e.target.value);
-                  setShowResults(true);
-                }}
-                onFocus={() => setShowResults(true)}
-                placeholder="Search: mango, upma, dosa..."
-                data-testid="input-food-search"
-                required
-              />
-              
-              {/* Search Results Dropdown */}
-              {showResults && foodResults.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
-                  {foodResults.map((food) => (
-                    <button
-                      key={food.id}
-                      type="button"
-                      onClick={() => selectFood(food)}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 flex items-center gap-3"
-                      data-testid={`food-result-${food.id}`}
-                    >
-                      <div className="w-12 h-12 flex-shrink-0 rounded-md bg-green-100 dark:bg-green-900/30 flex items-center justify-center overflow-hidden">
-                        {food.image_url ? (
-                          <img 
-                            src={food.image_url} 
-                            alt={food.food_name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                            onError={(e) => {
-                              const target = e.currentTarget as HTMLImageElement;
-                              target.style.display = 'none';
-                              target.parentElement!.innerHTML = '<svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>';
-                            }}
-                          />
-                        ) : (
-                          <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                          </svg>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900 dark:text-white">{food.food_name}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {food.calories} cal | P: {food.protein_g}g | C: {food.carbs_g}g | F: {food.fats_g}g
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            {/* Portion Size Selector */}
-            {portions.length > 0 && (
-              <div>
-                <Label htmlFor="portionSize">Portion Size</Label>
-                <Select 
-                  value={selectedPortion} 
-                  onValueChange={handlePortionChange}
-                >
-                  <SelectTrigger data-testid="select-portion-size">
-                    <SelectValue placeholder="Select portion (or keep 100g default)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {portions.map((portion) => (
-                      <SelectItem key={portion.id} value={portion.id.toString()}>
-                        {portion.portion_name} ({portion.portion_grams}g)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            
-            {/* Selected Food Display */}
-            {mealData.foodItem && (
-              <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
-                <div className="font-medium text-green-900 dark:text-green-100">✓ {mealData.foodItem}</div>
-                <div className="text-sm text-green-700 dark:text-green-300">
-                  {mealData.calories} cal | Protein: {mealData.protein}g | Carbs: {mealData.carbs}g | Fat: {mealData.fats}g
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {activeTab === "exercise" && (
-          <>
-            <div>
-              <Label htmlFor="exerciseType">Exercise Type</Label>
-              <Input
-                id="exerciseType"
-                value={exerciseData.exerciseType}
-                onChange={(e) => setExerciseData({ ...exerciseData, exerciseType: e.target.value })}
-                placeholder="e.g., Cardio, Strength, Yoga"
-                data-testid="input-exercise-type"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="exerciseName">Exercise Name</Label>
-              <Input
-                id="exerciseName"
-                value={exerciseData.exerciseName}
-                onChange={(e) => setExerciseData({ ...exerciseData, exerciseName: e.target.value })}
-                placeholder="e.g., Running, Push-ups"
-                data-testid="input-exercise-name"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="duration">Duration (minutes)</Label>
-              <Input
-                id="duration"
-                type="number"
-                value={exerciseData.duration}
-                onChange={(e) => setExerciseData({ ...exerciseData, duration: e.target.value })}
-                placeholder="How long did you exercise?"
-                data-testid="input-duration"
-              />
-            </div>
-            <div>
-              <Label htmlFor="caloriesBurned">Calories Burned</Label>
-              <Input
-                id="caloriesBurned"
-                type="number"
-                value={exerciseData.caloriesBurned}
-                onChange={(e) => setExerciseData({ ...exerciseData, caloriesBurned: e.target.value })}
-                placeholder="Estimated calories burned"
-                data-testid="input-calories-burned"
-              />
-            </div>
-          </>
-        )}
-
-        {activeTab === "sleep" && (
-          <>
-            <div>
-              <Label htmlFor="sleepDate">Sleep Date</Label>
-              <Input
-                id="sleepDate"
-                type="date"
-                value={sleepData.sleepDate}
-                onChange={(e) => setSleepData({ ...sleepData, sleepDate: e.target.value })}
-                data-testid="input-sleep-date"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="hoursSlept">Hours Slept</Label>
-              <Input
-                id="hoursSlept"
-                type="number"
-                step="0.5"
-                value={sleepData.hoursSlept}
-                onChange={(e) => setSleepData({ ...sleepData, hoursSlept: e.target.value })}
-                placeholder="e.g., 7.5"
-                data-testid="input-hours-slept"
-              />
-            </div>
-            <div>
-              <Label htmlFor="sleepQuality">Sleep Quality (1-5)</Label>
-              <Select 
-                value={sleepData.sleepQuality} 
-                onValueChange={(value) => setSleepData({ ...sleepData, sleepQuality: value })}
-              >
-                <SelectTrigger data-testid="select-sleep-quality">
-                  <SelectValue placeholder="Rate your sleep quality" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 - Very Poor</SelectItem>
-                  <SelectItem value="2">2 - Poor</SelectItem>
-                  <SelectItem value="3">3 - Fair</SelectItem>
-                  <SelectItem value="4">4 - Good</SelectItem>
-                  <SelectItem value="5">5 - Excellent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        )}
-
-        {activeTab === "weight" && (
-          <div>
-            <Label htmlFor="weight">Weight (kg)</Label>
+        {/* Food Search */}
+        <div className="relative">
+          <Label>Search Food *</Label>
+          <div className="relative mt-1">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
-              id="weight"
-              type="number"
-              step="0.1"
-              value={weightData.weight}
-              onChange={(e) => setWeightData({ ...weightData, weight: e.target.value })}
-              placeholder="Your current weight"
-              data-testid="input-weight"
-              required
+              value={foodSearch}
+              onChange={(e) => {
+                setFoodSearch(e.target.value);
+                setShowResults(true);
+              }}
+              onFocus={() => setShowResults(true)}
+              placeholder="Try: dosa, pizza, chicken, vankaya..."
+              className="pl-10"
+              data-testid="input-food-search"
             />
+          </div>
+
+          {/* Search Results Dropdown */}
+          {showResults && foodResults.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-64 overflow-auto">
+              {foodResults.map((food) => (
+                <button
+                  key={food.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedFood(food);
+                    setFoodSearch(food.food_name);
+                    setShowResults(false);
+                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
+                  data-testid={`food-result-${food.id}`}
+                >
+                  <div className="font-medium text-gray-900 dark:text-white">
+                    {food.food_name}
+                    {food.local_name && (
+                      <span className="text-sm text-gray-500 ml-2">({food.local_name})</span>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {food.calories} cal | P: {food.protein_g}g | C: {food.carbs_g}g | F: {food.fats_g}g
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Selected Food Display */}
+        {selectedFood && (
+          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border-2 border-green-200 dark:border-green-800">
+            <div className="font-semibold text-green-900 dark:text-green-100 flex items-center gap-2">
+              <span className="text-lg">✓</span>
+              {selectedFood.food_name}
+            </div>
+            <div className="grid grid-cols-4 gap-2 mt-2 text-sm">
+              <div className="text-center">
+                <div className="font-bold text-orange-600">{selectedFood.calories}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Calories</div>
+              </div>
+              <div className="text-center">
+                <div className="font-bold text-pink-600">{selectedFood.protein_g}g</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Protein</div>
+              </div>
+              <div className="text-center">
+                <div className="font-bold text-yellow-600">{selectedFood.carbs_g}g</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Carbs</div>
+              </div>
+              <div className="text-center">
+                <div className="font-bold text-blue-600">{selectedFood.fats_g}g</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Fats</div>
+              </div>
+            </div>
           </div>
         )}
 
-        {activeTab === "water" && (
-          <>
-            <div>
-              <Label htmlFor="amount">Amount</Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.1"
-                value={waterData.amount}
-                onChange={(e) => setWaterData({ ...waterData, amount: e.target.value })}
-                placeholder="How much water?"
-                data-testid="input-water-amount"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="unit">Unit</Label>
-              <Select 
-                value={waterData.unit} 
-                onValueChange={(value) => setWaterData({ ...waterData, unit: value })}
-              >
-                <SelectTrigger data-testid="select-water-unit">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="glasses">Glasses</SelectItem>
-                  <SelectItem value="ml">Milliliters</SelectItem>
-                  <SelectItem value="oz">Ounces</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        )}
-
-        <Button 
-          type="submit" 
-          className="w-full" 
-          disabled={addDataMutation.isPending}
-          data-testid="button-submit-data"
+        {/* Add Button */}
+        <Button
+          onClick={handleAddMeal}
+          disabled={!selectedFood || !mealType || addMealMutation.isPending}
+          className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+          data-testid="button-add-meal"
         >
-          {addDataMutation.isPending ? "Logging..." : `Log ${activeTab}`}
+          <Plus className="mr-2 h-4 w-4" />
+          {addMealMutation.isPending ? "Adding..." : "Add Meal"}
         </Button>
-      </form>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
-type RecentData = {
-  meals?: any[];
-  exercises?: any[];
-  sleepRecords?: any[];
-  weightRecords?: any[];
-  waterIntake?: any[];
-};
-
-function DataView({ userId }: { userId: string }) {
-  const { data: recentData, isLoading } = useQuery<RecentData>({
-    queryKey: ["/api/recent", userId],
-    enabled: !!userId
+// Today's Meals Card Component
+function TodaysMealsCard({ userId }: { userId: number }) {
+  const { data: mealsData, isLoading } = useQuery<{ meals: any[] }>({
+    queryKey: [`/api/meals/today`],
   });
 
-  if (isLoading) {
-    return <div data-testid="loading-recent-data">Loading recent data...</div>;
-  }
-
-  if (!recentData || Object.keys(recentData).length === 0) {
-    return (
-      <div className="text-center text-gray-500 dark:text-gray-400" data-testid="no-data">
-        No data logged yet. Start tracking your health!
-      </div>
-    );
-  }
+  const meals = mealsData?.meals || [];
 
   return (
-    <div className="space-y-4" data-testid="recent-data">
-      {recentData.meals && recentData.meals.length > 0 && (
-        <div>
-          <h4 className="font-semibold mb-2">Recent Meals</h4>
-          {recentData.meals.slice(0, 3).map((meal: any, index: number) => (
-            <div key={index} className="text-sm text-gray-600 dark:text-gray-400">
-              {meal.mealType}: {meal.foodItem} ({meal.calories} cal)
-            </div>
-          ))}
-        </div>
-      )}
-
-      {recentData.exercises && recentData.exercises.length > 0 && (
-        <div>
-          <h4 className="font-semibold mb-2">Recent Exercises</h4>
-          {recentData.exercises.slice(0, 3).map((exercise: any, index: number) => (
-            <div key={index} className="text-sm text-gray-600 dark:text-gray-400">
-              {exercise.exerciseName} - {exercise.duration} min
-            </div>
-          ))}
-        </div>
-      )}
-
-      {recentData.sleepRecords && recentData.sleepRecords.length > 0 && (
-        <div>
-          <h4 className="font-semibold mb-2">Recent Sleep</h4>
-          {recentData.sleepRecords.slice(0, 3).map((sleep: any, index: number) => (
-            <div key={index} className="text-sm text-gray-600 dark:text-gray-400">
-              {sleep.sleepDate}: {sleep.hoursSlept}h (Quality: {sleep.sleepQuality}/5)
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    <Card className="shadow-lg">
+      <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
+        <CardTitle>Today's Meals</CardTitle>
+        <CardDescription>
+          {meals.length} {meals.length === 1 ? 'meal' : 'meals'} logged today
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pt-6">
+        {isLoading ? (
+          <div className="text-center py-8 text-gray-500">Loading meals...</div>
+        ) : meals.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No meals logged today. Start tracking!
+          </div>
+        ) : (
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {meals.map((meal: any) => (
+              <div
+                key={meal.id}
+                className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:shadow-md transition-shadow"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      {meal.meal_name}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                        {meal.meal_type}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-orange-600">{meal.calories} cal</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      P: {meal.protein_g}g | F: {meal.fats_g}g
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

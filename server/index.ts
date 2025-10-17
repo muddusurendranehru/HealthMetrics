@@ -1,3 +1,7 @@
+// Load environment variables first
+import dotenv from "dotenv";
+dotenv.config();
+
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
@@ -15,6 +19,9 @@ app.set('trust proxy', 1);
 // Setup PostgreSQL session store
 const PgSession = connectPgSimple(session);
 
+// Session configuration - adjust for localhost vs production
+const isProduction = process.env.NODE_ENV === 'production';
+
 app.use(
   session({
     store: new PgSession({
@@ -29,9 +36,8 @@ app.use(
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      // For Replit preview iframe: always use SameSite=None with Secure
-      sameSite: 'none',
-      secure: true,
+      sameSite: isProduction ? 'none' : 'lax', // 'lax' for localhost, 'none' for production
+      secure: isProduction, // true only in production (https), false for localhost (http)
     },
   })
 );
@@ -91,11 +97,12 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  const host = process.platform === 'win32' ? 'localhost' : '0.0.0.0';
+  
+  server.listen(port, host, () => {
+    log(`✅ 90-Day Health Tracker Server running!`);
+    log(`🌐 Local: http://localhost:${port}`);
+    log(`📊 Health Check: http://localhost:${port}/api/health`);
+    log(`🍕 Food Search: Ready with 426+ Indian foods`);
   });
 })();

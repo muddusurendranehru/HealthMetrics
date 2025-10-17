@@ -2,37 +2,22 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import { createServer, type Server } from "http";
 import { neon } from "@neondatabase/serverless";
 import bcrypt from "bcryptjs";
-import path from "path";
+import dotenv from "dotenv";
 import "./session";
 
+// Load environment variables
+dotenv.config();
+
 // Neon Database Connection
-const DATABASE_URL = process.env.DATABASE_URL!;
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  throw new Error("DATABASE_URL environment variable is not set. Check your .env file.");
+}
 const sql = neon(DATABASE_URL);
 
-// Phone number normalization for Indian numbers
-function normalizePhoneNumber(phone: string): string {
-  // Remove all spaces and special characters
-  let cleaned = phone.replace(/[\s\-\(\)]/g, '');
-  
-  // Handle different formats:
-  // +919963123456 -> 9963123456
-  // 919963123456 -> 9963123456
-  // 9963123456 -> 9963123456
-  if (cleaned.startsWith('+91')) {
-    cleaned = cleaned.substring(3);
-  } else if (cleaned.startsWith('91') && cleaned.length === 12) {
-    cleaned = cleaned.substring(2);
-  }
-  
-  // Final validation: should be 10 digits starting with 6-9
-  if (cleaned.length === 10 && /^[6-9]\d{9}$/.test(cleaned)) {
-    return cleaned;
-  }
-  
-  throw new Error('Invalid Indian phone number format');
-}
-
-// Authentication middleware
+// ========================================
+// AUTHENTICATION MIDDLEWARE
+// ========================================
 function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!req.session?.userId) {
     return res.status(401).json({ error: "Not authenticated" });
@@ -40,24 +25,16 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
+// ========================================
+// REGISTER ROUTES
+// ========================================
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Serve static files from public directory
-  app.use(express.static(path.join(process.cwd(), "public")));
   
-  // Serve static HTML files
-  app.get("/", (req, res) => {
-    res.sendFile(path.join(process.cwd(), "public", "index.html"));
-  });
-
-  app.get("/dashboard.html", (req, res) => {
-    res.sendFile(path.join(process.cwd(), "public", "dashboard.html"));
-  });
-
   // ========================================
   // AUTH ROUTES
   // ========================================
 
-  // Register/Signup - EMAIL ONLY
+  // SIGNUP - Email, Password, Confirm Password
   app.post("/api/signup", async (req, res) => {
     try {
       const { email, password } = req.body;
@@ -67,7 +44,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if email already exists
-      const existingEmail: any[] = await sql`
+      const existingEmail = await sql`
         SELECT * FROM users WHERE email = ${email}
       `;
       
@@ -78,9 +55,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
       
-      // Insert user with password in the 'password' column (old table structure)
-      const result: any[] = await sql`
-        INSERT INTO users (email, password)
+      // Insert user
+      const result = await sql`
+        INSERT INTO users (email, password_hash)
         VALUES (${email}, ${hashedPassword})
         RETURNING id, email, created_at
       `;
@@ -96,7 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Login - EMAIL ONLY WITH SESSION
+  // LOGIN - Email, Password (with session)
   app.post("/api/login", async (req, res) => {
     try {
       const { email, password } = req.body;
@@ -106,7 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Find user by email
-      const users: any[] = await sql`
+      const users = await sql`
         SELECT * FROM users WHERE email = ${email.trim()}
       `;
       
@@ -116,25 +93,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid email or password" });
       }
       
-      // Check password (old table uses 'password' column)
-      const validPassword = await bcrypt.compare(password, user.password_hash || user.password);
+      // Check password
+      const validPassword = await bcrypt.compare(password, user.password_hash);
       
       if (!validPassword) {
         return res.status(401).json({ message: "Invalid email or password" });
       }
       
-      // Save to session (server-side, secure!)
+      // Save to session
       req.session.userId = user.id;
       req.session.userEmail = user.email;
       
-      // IMPORTANT: Save session before responding to ensure cookie is set
+      // Save session before responding
       req.session.save((err) => {
         if (err) {
           console.error("❌ Session save error:", err);
           return res.status(500).json({ message: "Session error" });
         }
         
-        console.log("✅ User logged in:", user.email, "User ID:", user.id);
+        console.log("✅ User logged in:", user.email);
         
         return res.json({ 
           success: true, 
@@ -150,7 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Logout
+  // LOGOUT
   app.post("/api/logout", (req, res) => {
     req.session.destroy((err) => {
       if (err) {
@@ -162,11 +139,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Get current user (check if logged in)
+  // GET CURRENT USER
   app.get('/api/me', requireAuth, async (req: Request, res: Response) => {
     try {
-      const users: any[] = await sql`
-        SELECT id, email, first_name, last_name, created_at 
+      const users = await sql`
+        SELECT id, email, username, full_name, created_at 
         FROM users 
         WHERE id = ${req.session.userId}
       `;
@@ -183,7 +160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ========================================
-  // FOOD SEARCH
+  // FOOD SEARCH (for meal entry)
   // ========================================
 
   app.get("/api/foods/search", requireAuth, async (req, res) => {
@@ -194,11 +171,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ foods: [] });
       }
       
-      const foods: any[] = await sql`
+      // Search by food_name, local_name, or search_tags
+      const foods = await sql`
         SELECT * FROM food_nutrition 
         WHERE food_name ILIKE ${`%${q}%`}
+           OR local_name ILIKE ${`%${q}%`}
+           OR search_tags ILIKE ${`%${q}%`}
         ORDER BY food_name
-        LIMIT 20
+        LIMIT 30
       `;
       
       console.log(`✅ Search "${q}": ${foods.length} results`);
@@ -209,69 +189,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get portion sizes for a food
-  app.get("/api/foods/:foodId/portions", requireAuth, async (req, res) => {
-    try {
-      const foodId = parseInt(req.params.foodId);
-      
-      const portions: any[] = await sql`
-        SELECT * FROM portion_sizes 
-        WHERE food_id = ${foodId}
-        ORDER BY portion_grams ASC
-      `;
-      
-      console.log(`✅ Found ${portions.length} portions for food ${foodId}`);
-      return res.json({ portions: portions });
-    } catch (error) {
-      console.error("❌ Get portions error:", error);
-      return res.status(500).json({ error: "Failed to get portions" });
-    }
-  });
-
   // ========================================
-  // MEALS - USING SESSION (SECURE)
+  // MEALS ROUTES (Diet Tracking)
   // ========================================
 
-  // Add meal - uses session user ID
-  app.post("/api/meals/add", requireAuth, async (req, res) => {
+  // ADD MEAL
+  app.post("/api/meals", requireAuth, async (req, res) => {
     try {
-      const { food_name, calories, protein_g, carbs_g, fats_g, meal_type } = req.body;
-      const user_id = req.session.userId!;
+      const { mealName, mealType, calories, proteinG, carbsG, fatsG, notes } = req.body;
+      const userId = req.session.userId!;
       
-      if (!food_name) {
-        return res.status(400).json({ error: "Food name required" });
+      if (!mealName || !mealType) {
+        return res.status(400).json({ error: "Meal name and type required" });
       }
       
-      // Default to 'snack' if no meal_type provided
-      const mealType = meal_type || 'snack';
-      
-      console.log(`🔍 Adding ${mealType} for session user_id: ${user_id}`);
-      
-      const result: any[] = await sql`
-        INSERT INTO meal_logs (
-          user_id, 
-          food_name, 
-          calories, 
-          protein_g, 
-          carbs_g, 
-          fats_g,
-          meal_type,
-          meal_date
+      const result = await sql`
+        INSERT INTO meals (
+          user_id, meal_name, meal_type, 
+          calories, protein_g, carbs_g, fats_g, notes
         )
         VALUES (
-          ${user_id},
-          ${food_name},
-          ${calories || 0},
-          ${protein_g || 0},
-          ${carbs_g || 0},
-          ${fats_g || 0},
-          ${mealType},
-          CURRENT_DATE
+          ${userId}, ${mealName}, ${mealType},
+          ${calories || 0}, ${proteinG || 0}, ${carbsG || 0}, ${fatsG || 0}, ${notes || null}
         )
         RETURNING *
       `;
       
-      console.log(`✅ Meal added for user ${user_id}:`, food_name);
+      console.log(`✅ Meal added for user ${userId}:`, mealName);
       return res.json({ success: true, meal: result[0] });
     } catch (error) {
       console.error("❌ Add meal error:", error);
@@ -279,21 +223,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get today's meals - uses session user ID
+  // GET TODAY'S MEALS
   app.get("/api/meals/today", requireAuth, async (req, res) => {
     try {
-      const user_id = req.session.userId!;
+      const userId = req.session.userId!;
       
-      console.log(`🔍 Fetching meals for session user_id: ${user_id}`);
-      
-      const meals: any[] = await sql`
-        SELECT * FROM meal_logs 
-        WHERE user_id = ${user_id}
+      const meals = await sql`
+        SELECT * FROM meals 
+        WHERE user_id = ${userId}
         AND meal_date = CURRENT_DATE
         ORDER BY created_at DESC
       `;
       
-      console.log(`✅ Found ${meals.length} meals for user ${user_id}`);
+      console.log(`✅ Found ${meals.length} meals for user ${userId} today`);
       return res.json({ meals: meals });
     } catch (error) {
       console.error("❌ Fetch meals error:", error);
@@ -301,16 +243,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete meal - uses session, checks ownership
+  // GET MEALS (with date range for 90 days)
+  app.get("/api/meals", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const { startDate, endDate } = req.query;
+      
+      let meals;
+      if (startDate && endDate) {
+        meals = await sql`
+          SELECT * FROM meals 
+          WHERE user_id = ${userId}
+          AND meal_date BETWEEN ${startDate as string} AND ${endDate as string}
+          ORDER BY meal_date DESC, created_at DESC
+        `;
+      } else {
+        // Default: last 7 days
+        meals = await sql`
+          SELECT * FROM meals 
+          WHERE user_id = ${userId}
+          AND meal_date >= CURRENT_DATE - INTERVAL '7 days'
+          ORDER BY meal_date DESC, created_at DESC
+        `;
+      }
+      
+      return res.json({ meals: meals });
+    } catch (error) {
+      console.error("❌ Fetch meals error:", error);
+      return res.status(500).json({ error: "Failed to fetch meals" });
+    }
+  });
+
+  // DELETE MEAL
   app.delete("/api/meals/:id", requireAuth, async (req, res) => {
     try {
       const mealId = parseInt(req.params.id);
-      const user_id = req.session.userId!;
+      const userId = req.session.userId!;
       
-      // Only delete if meal belongs to this user
-      const result: any[] = await sql`
-        DELETE FROM meal_logs 
-        WHERE id = ${mealId} AND user_id = ${user_id}
+      const result = await sql`
+        DELETE FROM meals 
+        WHERE id = ${mealId} AND user_id = ${userId}
         RETURNING *
       `;
       
@@ -318,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Meal not found or unauthorized" });
       }
       
-      console.log(`✅ Meal deleted: ${mealId} by user ${user_id}`);
+      console.log(`✅ Meal deleted: ${mealId} by user ${userId}`);
       return res.json({ success: true });
     } catch (error) {
       console.error("❌ Delete meal error:", error);
@@ -326,14 +298,195 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========================================
+  // EXERCISES ROUTES
+  // ========================================
+
+  // ADD EXERCISE
+  app.post("/api/exercises", requireAuth, async (req, res) => {
+    try {
+      const { exerciseName, exerciseType, durationMinutes, caloriesBurned, notes } = req.body;
+      const userId = req.session.userId!;
+      
+      if (!exerciseName) {
+        return res.status(400).json({ error: "Exercise name required" });
+      }
+      
+      const result = await sql`
+        INSERT INTO exercises (
+          user_id, exercise_name, exercise_type, 
+          duration_minutes, calories_burned, notes
+        )
+        VALUES (
+          ${userId}, ${exerciseName}, ${exerciseType || null},
+          ${durationMinutes || null}, ${caloriesBurned || null}, ${notes || null}
+        )
+        RETURNING *
+      `;
+      
+      console.log(`✅ Exercise added for user ${userId}:`, exerciseName);
+      return res.json({ success: true, exercise: result[0] });
+    } catch (error) {
+      console.error("❌ Add exercise error:", error);
+      return res.status(500).json({ error: "Failed to add exercise" });
+    }
+  });
+
+  // GET EXERCISES
+  app.get("/api/exercises", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const { startDate, endDate } = req.query;
+      
+      let exercises;
+      if (startDate && endDate) {
+        exercises = await sql`
+          SELECT * FROM exercises 
+          WHERE user_id = ${userId}
+          AND exercise_date BETWEEN ${startDate as string} AND ${endDate as string}
+          ORDER BY exercise_date DESC, created_at DESC
+        `;
+      } else {
+        exercises = await sql`
+          SELECT * FROM exercises 
+          WHERE user_id = ${userId}
+          AND exercise_date >= CURRENT_DATE - INTERVAL '7 days'
+          ORDER BY exercise_date DESC, created_at DESC
+        `;
+      }
+      
+      return res.json({ exercises: exercises });
+    } catch (error) {
+      console.error("❌ Fetch exercises error:", error);
+      return res.status(500).json({ error: "Failed to fetch exercises" });
+    }
+  });
+
+  // ========================================
+  // SLEEP ROUTES
+  // ========================================
+
+  // ADD SLEEP RECORD
+  app.post("/api/sleep", requireAuth, async (req, res) => {
+    try {
+      const { sleepDate, totalHours, sleepQuality, notes } = req.body;
+      const userId = req.session.userId!;
+      
+      if (!sleepDate) {
+        return res.status(400).json({ error: "Sleep date required" });
+      }
+      
+      const result = await sql`
+        INSERT INTO sleep_records (
+          user_id, sleep_date, total_hours, sleep_quality, notes
+        )
+        VALUES (
+          ${userId}, ${sleepDate}, ${totalHours || null}, ${sleepQuality || null}, ${notes || null}
+        )
+        RETURNING *
+      `;
+      
+      console.log(`✅ Sleep record added for user ${userId}`);
+      return res.json({ success: true, sleep: result[0] });
+    } catch (error) {
+      console.error("❌ Add sleep error:", error);
+      return res.status(500).json({ error: "Failed to add sleep record" });
+    }
+  });
+
+  // GET SLEEP RECORDS
+  app.get("/api/sleep", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const { startDate, endDate } = req.query;
+      
+      let sleepRecords;
+      if (startDate && endDate) {
+        sleepRecords = await sql`
+          SELECT * FROM sleep_records 
+          WHERE user_id = ${userId}
+          AND sleep_date BETWEEN ${startDate as string} AND ${endDate as string}
+          ORDER BY sleep_date DESC
+        `;
+      } else {
+        sleepRecords = await sql`
+          SELECT * FROM sleep_records 
+          WHERE user_id = ${userId}
+          AND sleep_date >= CURRENT_DATE - INTERVAL '7 days'
+          ORDER BY sleep_date DESC
+        `;
+      }
+      
+      return res.json({ sleep: sleepRecords });
+    } catch (error) {
+      console.error("❌ Fetch sleep error:", error);
+      return res.status(500).json({ error: "Failed to fetch sleep records" });
+    }
+  });
+
+  // ========================================
+  // DASHBOARD SUMMARY (for speedometer display)
+  // ========================================
+  
+  app.get("/api/dashboard/summary", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      
+      // Get today's totals
+      const todayMeals = await sql`
+        SELECT 
+          COALESCE(SUM(calories), 0) as total_calories,
+          COALESCE(SUM(protein_g), 0) as total_protein,
+          COALESCE(SUM(carbs_g), 0) as total_carbs,
+          COALESCE(SUM(fats_g), 0) as total_fats,
+          COUNT(*) as meal_count
+        FROM meals
+        WHERE user_id = ${userId}
+        AND meal_date = CURRENT_DATE
+      `;
+      
+      const todayExercises = await sql`
+        SELECT 
+          COALESCE(SUM(duration_minutes), 0) as total_minutes,
+          COALESCE(SUM(calories_burned), 0) as total_burned,
+          COUNT(*) as exercise_count
+        FROM exercises
+        WHERE user_id = ${userId}
+        AND exercise_date = CURRENT_DATE
+      `;
+      
+      const recentSleep = await sql`
+        SELECT 
+          total_hours,
+          sleep_quality,
+          sleep_date
+        FROM sleep_records
+        WHERE user_id = ${userId}
+        ORDER BY sleep_date DESC
+        LIMIT 1
+      `;
+      
+      return res.json({
+        today: {
+          meals: todayMeals[0],
+          exercises: todayExercises[0],
+          sleep: recentSleep[0] || null
+        }
+      });
+    } catch (error) {
+      console.error("❌ Dashboard summary error:", error);
+      return res.status(500).json({ error: "Failed to fetch dashboard summary" });
+    }
+  });
+
   // Health check
   app.get("/api/health", (req, res) => {
     return res.json({ 
       status: "ok", 
-      message: "NutriBot API running!",
+      message: "90-Day Health Tracker API running!",
       session: req.session?.userId ? "authenticated" : "guest",
       database: "Neon PostgreSQL",
-      foods: "142+ available"
+      version: "1.0.0"
     });
   });
 
